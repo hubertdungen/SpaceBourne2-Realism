@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.0 — 2026-10-31
+
+- **Play button.** Starts SpaceBourne 2, through Steam for Steam copies. When SB2 HOTAS is on, it starts the HOTAS bridge first.
+- **SB2 HOTAS from the installer.** Ticking it downloads the bridge app and installs the in-game part. **Open SB2 HOTAS** starts the bridge, and **Update all** keeps it current. A copy of the bridge you already run yourself is detected and left alone.
+
 ## 0.1.0 — 2026-10-31
 
 First release.

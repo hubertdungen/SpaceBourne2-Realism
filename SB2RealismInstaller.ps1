@@ -17,7 +17,7 @@ param(
     [string]$Manifest
 )
 $ErrorActionPreference = 'Stop'
-$AppVersion = '0.1.0'
+$AppVersion = '0.2.0'
 $AppRepo = 'hubertdungen/SpaceBourne2-Realism'
 $ManifestUrl = "https://raw.githubusercontent.com/$AppRepo/main/mods.json"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -123,6 +123,11 @@ function Get-Installed($m) {
     if (Test-Path $main) {
         $mm = [regex]::Match((Read-Text $main), 'VERSION\s*=\s*"([^"]+)"')
         if ($mm.Success) { $ver = $mm.Groups[1].Value }
+    }
+    # Mods with their own app (SB2 HOTAS): the version of the copy this installer keeps.
+    if ($ver -eq '?' -and $m.app) {
+        $vf = Join-Path (AppDir $m) 'version.txt'
+        if (Test-Path $vf) { $ver = (Read-Text $vf).Trim() }
     }
     $state = Get-ModsTxtState $m.folder
     $active = ($state -eq '1') -or (($state -ne '0') -and (Test-Path (Join-Path $d 'enabled.txt')))
@@ -236,6 +241,62 @@ function Install-ModFiles($m) {
     } finally { Remove-Item $tmp -Recurse -Force -ErrorAction SilentlyContinue }
 }
 
+# ---------- mods with their own app (SB2 HOTAS) ----------
+function AppDir($m) { Join-Path $DataDir "apps\$($m.id)" }
+function Get-AppExe($m) {
+    if (-not $m.app) { return $null }
+    $p = Join-Path (AppDir $m) $m.app
+    if (Test-Path $p) { return $p }
+    return $null
+}
+
+# Downloads the app into %LOCALAPPDATA%\SB2Realism\apps\<id>, then runs its own installer for the in-game part.
+function Install-AppFiles($m) {
+    if ($m.process -and (Get-Process $m.process -ErrorAction SilentlyContinue)) { throw "Close $($m.name) first." }
+    $lat = $script:Latest[$m.id]
+    if (-not $lat) { $lat = Get-LatestRelease $m; $script:Latest[$m.id] = $lat }
+    $tmp = Join-Path $env:TEMP ('SB2Realism_' + [guid]::NewGuid().ToString('N'))
+    New-Item -ItemType Directory -Force $tmp | Out-Null
+    try {
+        Log "  Downloading $($m.name) $($lat.Version) (it is large, please wait)..."
+        Invoke-WebRequest $lat.Url -OutFile (Join-Path $tmp 'app.zip') -UseBasicParsing
+        Expand-Archive (Join-Path $tmp 'app.zip') (Join-Path $tmp 'x') -Force
+        $exe = Get-ChildItem (Join-Path $tmp 'x') -Recurse -File -Filter (Split-Path $m.app -Leaf) | Select-Object -First 1
+        if (-not $exe) { throw "The download has no $($m.app)." }
+        $root = $exe.Directory
+        for ($i = 0; $i -lt ($m.app.Split('\').Count - 1); $i++) { $root = $root.Parent }
+        $dest = AppDir $m
+        if (Test-Path $dest) { Remove-Item $dest -Recurse -Force }
+        New-Item -ItemType Directory -Force (Split-Path $dest) | Out-Null
+        Move-Item $root.FullName $dest
+        Write-Text (Join-Path $dest 'version.txt') $lat.Version
+        Log "  $($m.name) app saved in $dest"
+        if ($m.installScript) {
+            $out = & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $dest $m.installScript) -Game $script:Game 2>&1
+            foreach ($l in @($out)) { if ("$l".Trim()) { Log "  $l" } }
+        }
+    } finally { Remove-Item $tmp -Recurse -Force -ErrorAction SilentlyContinue }
+}
+
+function Start-App($m) {
+    # any running copy counts, including one the player extracted elsewhere
+    if ($m.process -and (Get-Process $m.process -ErrorAction SilentlyContinue)) { Log "$($m.name) is already running."; return $true }
+    $exe = Get-AppExe $m
+    if (-not $exe) { return $false }
+    Start-Process $exe -WorkingDirectory (Split-Path $exe)
+    Log "Started $($m.name)."
+    return $true
+}
+
+# Steam copies start through Steam (overlay, playtime); other copies start the game's own launcher.
+function Start-Game {
+    if ($script:Game -match '\\steamapps\\common\\') { Start-Process 'steam://rungameid/1646850'; Log 'Starting SpaceBourne 2 through Steam...'; return }
+    $exe = Join-Path $script:Game 'SpaceBourne2.exe'
+    if (-not (Test-Path $exe)) { $exe = Join-Path (Win64) 'SB2-Win64-Shipping.exe' }
+    Start-Process $exe -WorkingDirectory (Split-Path $exe)
+    Log 'Starting SpaceBourne 2...'
+}
+
 function Enable-Mod($m) {
     $d = ModDir $m
     Set-ModsTxt $m.folder $true
@@ -312,8 +373,11 @@ function Invoke-Apply($mods, [string[]]$ticked, [scriptblock]$askRemove) {
             if ($m.planned -and -not $script:Latest[$m.id]) { try { $script:Latest[$m.id] = Get-LatestRelease $m } catch { } }
             if (Test-ComingSoon $m) { Log '  coming soon: not released yet.'; continue }
             if ($m.external) {
-                if ($inst) { Set-ModsTxt $m.folder $true; Log '  active (updates come from its own app).' }
-                else { Log "  Install it with its own app: https://www.nexusmods.com/spacebourne2/mods/$($m.nexus)" }
+                try {
+                    if (-not $inst -and $m.app) { Install-AppFiles $m; $inst = Get-Installed $m }
+                    if ($inst) { Set-ModsTxt $m.folder $true; Log "  $($m.name) is active. Its app must run while you play (Play starts it)." }
+                    else { Log "  Install it with its own app: https://www.nexusmods.com/spacebourne2/mods/$($m.nexus)" }
+                } catch { Log "  FAILED: $($_.Exception.Message)" }
                 continue
             }
             try {
@@ -342,7 +406,11 @@ function Invoke-UpdateAll($mods) {
         if ((Compare-Ver $inst.Version $lat.Version) -ge 0) { continue }
         $any = $true
         Log "$($m.name): $($inst.Version) -> $($lat.Version)"
-        if ($m.external) { Log '  Update it from its own app or its page.'; continue }
+        if ($m.external) {
+            if ($m.app) { try { Install-AppFiles $m } catch { Log "  FAILED: $($_.Exception.Message)" } }
+            else { Log '  Update it from its own app or its page.' }
+            continue
+        }
         try {
             Install-ModFiles $m
             if ($inst.Active) { Enable-Mod $m }
@@ -415,10 +483,13 @@ function New-Button([string]$text, [int]$w) {
     $b.Text = $text; $b.Width = $w; $b.Height = 28
     [void]$buttons.Controls.Add($b); return $b
 }
+$bPlay = New-Button 'Play' 90
+$bPlay.Font = New-Object System.Drawing.Font('Segoe UI', 9, [System.Drawing.FontStyle]::Bold)
 $bApply = New-Button 'Apply ticks' 110
 $bUpdate = New-Button 'Update all' 100
 $bCheck = New-Button 'Check for updates' 140
 $bPage = New-Button 'Open mod page' 120
+$bHotas = New-Button 'Open SB2 HOTAS' 130
 $cbStart = New-Object System.Windows.Forms.CheckBox
 $cbStart.Text = 'Check for updates when this opens'; $cbStart.AutoSize = $true; $cbStart.Checked = $settings.checkOnStart
 $cbStart.Margin = New-Object System.Windows.Forms.Padding(14, 8, 3, 3)
@@ -448,7 +519,7 @@ $form.Controls.Add($lv); $form.Controls.Add($log); $form.Controls.Add($buttons);
 $script:Mods = @()
 
 function Set-Busy([bool]$busy) {
-    foreach ($c in @($bApply, $bUpdate, $bCheck, $bBrowse, $bUe)) { $c.Enabled = -not $busy }
+    foreach ($c in @($bApply, $bUpdate, $bCheck, $bBrowse, $bUe, $bPlay, $bHotas)) { $c.Enabled = -not $busy }
     $form.UseWaitCursor = $busy
     [System.Windows.Forms.Application]::DoEvents()
 }
@@ -475,7 +546,10 @@ function Update-View {
         [void]$lv.Items.Add($it)
     }
     $lv.EndUpdate()
-    foreach ($c in @($bApply, $bUpdate, $bCheck)) { $c.Enabled = $ok }
+    foreach ($c in @($bApply, $bUpdate, $bCheck, $bPlay)) { $c.Enabled = $ok }
+    $hm = @($script:Mods | Where-Object { $_.app }) | Select-Object -First 1
+    $bHotas.Visible = [bool]$hm
+    if ($hm) { $bHotas.Enabled = $ok -and [bool](Get-Installed $hm) }
 }
 
 function Invoke-Safe([scriptblock]$work) {
@@ -503,6 +577,32 @@ $bApply.Add_Click({
         if ($r -eq 'Yes') { return $true } elseif ($r -eq 'No') { return $false } else { return $null }
     }
     Invoke-Safe { Invoke-Apply $script:Mods $ticked $ask }
+})
+# Opens the app of a mod that needs one (SB2 HOTAS). Without the installer's own copy yet, offer to download it.
+function Open-ModApp($m, [bool]$ask) {
+    if (Start-App $m) { return }
+    if ($ask) {
+        $r = [System.Windows.Forms.MessageBox]::Show($form, "Download the $($m.name) app now? (about 50 MB)`n`nIf you already use your own copy, open that one instead.", 'SB2 Realism', 'YesNo', 'Question')
+        if ($r -ne 'Yes') { return }
+    }
+    Install-AppFiles $m
+    [void](Start-App $m)
+}
+$bHotas.Add_Click({
+    $hm = @($script:Mods | Where-Object { $_.app }) | Select-Object -First 1
+    if ($hm) { Invoke-Safe { Open-ModApp $hm $true } }
+})
+$bPlay.Add_Click({
+    Invoke-Safe {
+        if (Test-GameRunning) { Log 'SpaceBourne 2 is already running.'; return }
+        foreach ($m in @($script:Mods | Where-Object { $_.app })) {
+            $inst = Get-Installed $m
+            if ($inst -and $inst.Active -and -not (Start-App $m)) {
+                Log "$($m.name) is on, but its app was not started: open your own copy, or press Open SB2 HOTAS once to get one."
+            }
+        }
+        Start-Game
+    }
 })
 $bPage.Add_Click({
     $sel = $lv.SelectedItems

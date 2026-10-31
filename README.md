@@ -23,10 +23,12 @@ What the buttons do:
 
 | Button | What it does |
 |---|---|
+| **Play** | Starts SpaceBourne 2 (through Steam for Steam copies). When SB2 HOTAS is on, it starts its bridge app first. |
 | **Apply ticks** | Installs and switches on every ticked mod. Switches off every unticked mod; you choose whether its files are deleted (a backup is kept). |
 | **Update all** | Installs the newest release of every installed mod that has one. |
 | **Check for updates** | Asks GitHub for the newest versions. It also runs when the window opens, unless you untick that option. |
 | **Open mod page** | Opens the selected mod's Nexus page. Double-clicking a row does the same. |
+| **Open SB2 HOTAS** | Opens the SB2 HOTAS bridge app, which must run while you play. The first time, it offers to download it (about 50 MB). |
 
 When Windows asks, allow the script to run. It is plain PowerShell, so you can read every line in `SB2RealismInstaller.ps1`.
 
@@ -42,7 +44,7 @@ When Windows asks, allow the script to run. It is plain PowerShell, so you can r
 | Faction Power | Dungeons, sales and missions earn your faction power | [GitHub](https://github.com/hubertdungen/SpaceBourne2-FactionPower) · [Nexus](https://www.nexusmods.com/spacebourne2/mods/9) |
 | Tactical Engineering | Deployable turrets that take time to set up | [GitHub](https://github.com/hubertdungen/SpaceBourne2-TacticalEngineering) · [Nexus](https://www.nexusmods.com/spacebourne2/mods/10) |
 
-SB2 HOTAS has its own bridge app, and that app installs and updates it. The installer shows its state and links to it.
+SB2 HOTAS has its own bridge app. When you tick it, the installer downloads the app to `%LOCALAPPDATA%\SB2Realism\apps\hotas` and runs its own install for the in-game part. **Update all** keeps that copy up to date. Your controller setup is kept, because the bridge saves it in `%LOCALAPPDATA%\SB2HOTAS`. If you already use your own copy of the bridge, that's fine too: **Play** notices it running.
 
 **Coming soon:** Tactical First Person, Ammo Discipline, Get Out of the Way and Ground Waypoints. They are already in the installer's list, greyed out as "coming soon". Each one becomes installable on its own as soon as it is released, without a new installer.
 

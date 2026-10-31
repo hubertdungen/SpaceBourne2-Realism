@@ -166,9 +166,12 @@
       "assetName": "SB2-HOTAS-{v}.zip",
       "nexus": 8,
       "external": true,
-      "desc": "Joystick, HOTAS, pedals, head tracking, triple screen. Installed by its own bridge app.",
+      "desc": "Joystick, HOTAS, pedals, head tracking, triple screen. Its bridge app must run while you play.",
       "switches": [],
-      "state": []
+      "state": [],
+      "app": "bridge\\SB2-HOTAS.exe",
+      "process": "SB2-HOTAS",
+      "installScript": "Install.ps1"
     }
   ]
 }

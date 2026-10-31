@@ -1,0 +1,78 @@
+[center][img]https://raw.githubusercontent.com/hubertdungen/SpaceBourne2-Realism/main/docs/banner.png[/img][/center]
+
+[size=6][b]SpaceBourne 2 Realism: installer and updater[/b][/size]
+
+One window to install, switch on and update the whole SpaceBourne 2 realism mod set. Tick the mods you want, press [b]Apply ticks[/b], and play.
+
+[list]
+[*][b]Pick your mods.[/b] Every mod in the set is listed with a short description. Install all of them or just one.
+[*][b]Ticked means on.[/b] Every ticked mod is installed [i]and[/i] switched on, even one that ships switched off on its own.
+[*][b]See what's out of date.[/b] It shows the version you have and the newest release on GitHub. [b]Update all[/b] downloads and installs every newer version for you.
+[*][b]Your settings stay.[/b] Updates keep your config.lua. The new defaults go next to it as config.default.lua.
+[*][b]Safe.[/b] It never touches your saves or the game's executable. Before it replaces or removes a mod, it keeps a backup in %LOCALAPPDATA%\SB2Realism\backups.
+[*][b]UE4SS included.[/b] If UE4SS is missing, one click installs UE4SS 3.0.1, the version every mod in the set is built for.
+[/list]
+
+[line]
+[size=5][b]How to use[/b][/size]
+
+[list=1]
+[*]Download the zip from [url=https://github.com/hubertdungen/SpaceBourne2-Realism/releases]Releases[/url] or Nexus, and extract it anywhere.
+[*]Close SpaceBourne 2.
+[*]Double-click [b]Install SB2 Realism.cmd[/b].
+[*]The installer finds the game through Steam. For GOG or another location, press [b]Browse[/b] and pick the SpaceBourne 2 folder.
+[*]Tick the mods you want and press [b]Apply ticks[/b].
+[/list]
+
+What the buttons do:
+
+[code]
+Button             What it does
+Apply ticks        Installs and switches on every ticked mod. Switches off every unticked mod; you choose whether its files are deleted (a backup is kept).
+Update all         Installs the newest release of every installed mod that has one.
+Check for updates  Asks GitHub for the newest versions. It also runs when the window opens, unless you untick that option.
+Open mod page      Opens the selected mod's Nexus page. Double-clicking a row does the same.
+[/code]
+
+When Windows asks, allow the script to run. It is plain PowerShell, so you can read every line in SB2RealismInstaller.ps1.
+
+[line]
+[size=5][b]The realism set[/b][/size]
+
+[code]
+Mod                              What it does                                                                    Links
+Hardcore Tactical Realism (HTR)  Combat and AI overhaul: caliber vs armor, hit zones, wounds, faction doctrines  [GitHub](https://github.com/hubertdungen/SpaceBourne2-HardcoreTacticalRealism) · [Nexus](https://www.nexusmods.com/spacebourne2/mods/4) · [Steam](https://steamcommunity.com/app/1646850/discussions/0/573805072991123580/)
+Split Controls                   Separate look inversion for ships and on foot                                   [GitHub](https://github.com/hubertdungen/SpaceBourne2-SplitControls) · [Nexus](https://www.nexusmods.com/spacebourne2/mods/5)
+Silent Ops                       Realistic stealth, suppressors, silent takedowns                                [GitHub](https://github.com/hubertdungen/SpaceBourne2-SilentOps) · [Nexus](https://www.nexusmods.com/spacebourne2/mods/6)
+Gear Without Levels              Any weapon or suit at any level, with small penalties                           [GitHub](https://github.com/hubertdungen/SpaceBourne2-GearWithoutLevels) · [Nexus](https://www.nexusmods.com/spacebourne2/mods/7)
+SB2 HOTAS                        Joystick, HOTAS, pedals, head tracking, triple screen                           [GitHub](https://github.com/hubertdungen/SpaceBourne2-HOTAS) · [Nexus](https://www.nexusmods.com/spacebourne2/mods/8)
+Faction Power                    Dungeons, sales and missions earn your faction power                            [GitHub](https://github.com/hubertdungen/SpaceBourne2-FactionPower) · [Nexus](https://www.nexusmods.com/spacebourne2/mods/9)
+Tactical Engineering             Deployable turrets that take time to set up                                     [GitHub](https://github.com/hubertdungen/SpaceBourne2-TacticalEngineering) · [Nexus](https://www.nexusmods.com/spacebourne2/mods/10)
+[/code]
+
+SB2 HOTAS has its own bridge app, and that app installs and updates it. The installer shows its state and links to it.
+
+Coming soon: Tactical First Person, Ammo Discipline, Get Out of the Way and Ground Waypoints. The installer reads its mod list from this repository (mods.json), so new mods show up without downloading a new installer.
+
+[line]
+[size=5][b]Details[/b][/size]
+
+[list]
+[*][b]On/off switch.[/b] A mod is switched on through its line in SB2\Binaries\Win64\Mods\mods.txt (Name : 1). Managed mods don't use enabled.txt, so switching a mod off really switches it off.
+[*][b]Ticking a mod switches on its main features.[/b]
+    - It sets the master switch in config.lua, e.g. Enabled (and StartOn for Tactical Engineering).
+    - If the mod remembers an in-game toggle, it resets that toggle to on.
+    - Optional extras inside a mod keep your choice, e.g. HTR's gear bonus.
+[*][b]Command line[/b] (for scripts): `` powershell -ExecutionPolicy Bypass -File SB2RealismInstaller.ps1 -NoGui -List powershell -ExecutionPolicy Bypass -File SB2RealismInstaller.ps1 -NoGui -Apply "htr,silentops,gear" [-Delete] powershell -ExecutionPolicy Bypass -File SB2RealismInstaller.ps1 -NoGui -UpdateAll ` Mod ids are in mods.json. -GamePath "D:\Games\SpaceBourne 2"` skips the automatic search.
+[/list]
+
+[line]
+[size=5][b]Credits[/b][/size]
+
+[list]
+[*]Made by hubertdungen.
+[*]Thanks to TheCalcMan for testing the set and for his ideas.
+[*]UE4SS by the [url=https://github.com/UE4SS-RE/RE-UE4SS]RE-UE4SS[/url] team (MIT). The installer downloads it from HTR's full release, which includes the licence notice.
+[/list]
+
+MIT licence.

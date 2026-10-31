@@ -151,12 +151,12 @@
       "repo": "hubertdungen/SpaceBourne2-GroundWaypoints",
       "assetName": "GroundWaypoints-{v}.zip",
       "asset": "\\.zip$",
-      "planned": true,
       "desc": "Planet waypoints on foot and on the hoverbike.",
       "switches": [
         "Enabled"
       ],
-      "state": []
+      "state": [],
+      "nexus": 13
     },
     {
       "id": "hotas",

@@ -15,5 +15,5 @@ First release.
 - **Safety.** It backs up a mod before replacing or removing it, never touches saves, and refuses to run while the game is open.
 - **UE4SS.** When it's missing, UE4SS 3.0.1 installs with one click.
 - **Live mod list.** The list is read from `mods.json` in this repository, so new mods appear without a new installer.
-- **Planned mods** (Tactical First Person, Ammo Discipline, Get Out of the Way, Ground Waypoints) show as "coming soon" and become installable as soon as they are released.
+- **Planned mods** (Tactical First Person, Get Out of the Way) show as "coming soon" and become installable as soon as they are released.
 - **No GitHub API limit.** Versions are read from GitHub's release links, so checking for updates keeps working however often you open it.

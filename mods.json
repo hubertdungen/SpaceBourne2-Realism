@@ -1,0 +1,82 @@
+{
+  "_about": "Mods managed by the SpaceBourne 2 Realism installer. 'switches' are config.lua keys set to true when the mod is ticked; 'state' lines are rewritten in the mod's saved toggle file so a ticked mod always starts active.",
+  "mods": [
+    {
+      "id": "htr",
+      "name": "Hardcore Tactical Realism (HTR)",
+      "folder": "HardcoreTacticalRealism",
+      "repo": "hubertdungen/SpaceBourne2-HardcoreTacticalRealism",
+      "asset": "-lite\\.zip$",
+      "nexus": 4,
+      "desc": "Realistic combat and AI: caliber vs armor, hit zones, wounds, faction doctrines.",
+      "switches": [],
+      "state": []
+    },
+    {
+      "id": "split",
+      "name": "Split Controls",
+      "folder": "SplitControls",
+      "repo": "hubertdungen/SpaceBourne2-SplitControls",
+      "asset": "\\.zip$",
+      "nexus": 5,
+      "desc": "Separate look inversion for ships and on foot, gamepad and mouse.",
+      "switches": ["Enabled"],
+      "state": []
+    },
+    {
+      "id": "silentops",
+      "name": "Silent Ops",
+      "folder": "SilentOps",
+      "repo": "hubertdungen/SpaceBourne2-SilentOps",
+      "asset": "\\.zip$",
+      "nexus": 6,
+      "desc": "Realistic stealth: suspicion, noise, suppressors, silent takedowns.",
+      "switches": ["Enabled"],
+      "state": [{ "file": "stealth_state.txt", "key": "stealth", "value": "on" }]
+    },
+    {
+      "id": "gear",
+      "name": "Gear Without Levels",
+      "folder": "GearWithoutLevels",
+      "repo": "hubertdungen/SpaceBourne2-GearWithoutLevels",
+      "asset": "\\.zip$",
+      "nexus": 7,
+      "desc": "Use any weapon or suit at any level, with small realistic penalties.",
+      "switches": ["Enabled"],
+      "state": [{ "file": "state.txt", "key": "enabled", "value": "on" }]
+    },
+    {
+      "id": "factionpower",
+      "name": "Faction Power",
+      "folder": "FactionPower",
+      "repo": "hubertdungen/SpaceBourne2-FactionPower",
+      "asset": "\\.zip$",
+      "nexus": 9,
+      "desc": "Dungeons, strategic sales and missions earn your faction power.",
+      "switches": ["Enabled"],
+      "state": [{ "file": "state.txt", "key": "on", "value": "true" }]
+    },
+    {
+      "id": "engineering",
+      "name": "Tactical Engineering",
+      "folder": "TacticalEngineering",
+      "repo": "hubertdungen/SpaceBourne2-TacticalEngineering",
+      "asset": "\\.zip$",
+      "nexus": 10,
+      "desc": "Deployable turrets that take time to set up, with limited ammo.",
+      "switches": ["Enabled", "StartOn"],
+      "state": []
+    },
+    {
+      "id": "hotas",
+      "name": "SB2 HOTAS (optional)",
+      "folder": "SB2HOTAS",
+      "repo": "hubertdungen/SpaceBourne2-HOTAS",
+      "nexus": 8,
+      "external": true,
+      "desc": "Joystick, HOTAS, pedals, head tracking, triple screen. Installed by its own bridge app.",
+      "switches": [],
+      "state": []
+    }
+  ]
+}

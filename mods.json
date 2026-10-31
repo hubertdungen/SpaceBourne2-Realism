@@ -1,11 +1,12 @@
 {
-  "_about": "Mods managed by the SpaceBourne 2 Realism installer. 'switches' are config.lua keys set to true when the mod is ticked; 'state' lines are rewritten in the mod's saved toggle file so a ticked mod always starts active.",
+  "_about": "Mods managed by the SpaceBourne 2 Realism installer. assetName is the release zip ({v} = version). switches are config.lua keys set to true when the mod is ticked; state lines are rewritten in the mod's saved toggle file so a ticked mod always starts active. planned mods show as 'coming soon' until their repo has a release.",
   "mods": [
     {
       "id": "htr",
       "name": "Hardcore Tactical Realism (HTR)",
       "folder": "HardcoreTacticalRealism",
       "repo": "hubertdungen/SpaceBourne2-HardcoreTacticalRealism",
+      "assetName": "HardcoreTacticalRealism-{v}-lite.zip",
       "asset": "-lite\\.zip$",
       "nexus": 4,
       "desc": "Realistic combat and AI: caliber vs armor, hit zones, wounds, faction doctrines.",
@@ -17,10 +18,13 @@
       "name": "Split Controls",
       "folder": "SplitControls",
       "repo": "hubertdungen/SpaceBourne2-SplitControls",
+      "assetName": "SplitControls-{v}.zip",
       "asset": "\\.zip$",
       "nexus": 5,
       "desc": "Separate look inversion for ships and on foot, gamepad and mouse.",
-      "switches": ["Enabled"],
+      "switches": [
+        "Enabled"
+      ],
       "state": []
     },
     {
@@ -28,43 +32,130 @@
       "name": "Silent Ops",
       "folder": "SilentOps",
       "repo": "hubertdungen/SpaceBourne2-SilentOps",
+      "assetName": "SilentOps-{v}.zip",
       "asset": "\\.zip$",
       "nexus": 6,
       "desc": "Realistic stealth: suspicion, noise, suppressors, silent takedowns.",
-      "switches": ["Enabled"],
-      "state": [{ "file": "stealth_state.txt", "key": "stealth", "value": "on" }]
+      "switches": [
+        "Enabled"
+      ],
+      "state": [
+        {
+          "file": "stealth_state.txt",
+          "key": "stealth",
+          "value": "on"
+        }
+      ]
     },
     {
       "id": "gear",
       "name": "Gear Without Levels",
       "folder": "GearWithoutLevels",
       "repo": "hubertdungen/SpaceBourne2-GearWithoutLevels",
+      "assetName": "GearWithoutLevels-{v}.zip",
       "asset": "\\.zip$",
       "nexus": 7,
       "desc": "Use any weapon or suit at any level, with small realistic penalties.",
-      "switches": ["Enabled"],
-      "state": [{ "file": "state.txt", "key": "enabled", "value": "on" }]
+      "switches": [
+        "Enabled"
+      ],
+      "state": [
+        {
+          "file": "state.txt",
+          "key": "enabled",
+          "value": "on"
+        }
+      ]
     },
     {
       "id": "factionpower",
       "name": "Faction Power",
       "folder": "FactionPower",
       "repo": "hubertdungen/SpaceBourne2-FactionPower",
+      "assetName": "FactionPower-{v}.zip",
       "asset": "\\.zip$",
       "nexus": 9,
       "desc": "Dungeons, strategic sales and missions earn your faction power.",
-      "switches": ["Enabled"],
-      "state": [{ "file": "state.txt", "key": "on", "value": "true" }]
+      "switches": [
+        "Enabled"
+      ],
+      "state": [
+        {
+          "file": "state.txt",
+          "key": "on",
+          "value": "true"
+        }
+      ]
     },
     {
       "id": "engineering",
       "name": "Tactical Engineering",
       "folder": "TacticalEngineering",
       "repo": "hubertdungen/SpaceBourne2-TacticalEngineering",
+      "assetName": "TacticalEngineering-{v}.zip",
       "asset": "\\.zip$",
       "nexus": 10,
       "desc": "Deployable turrets that take time to set up, with limited ammo.",
-      "switches": ["Enabled", "StartOn"],
+      "switches": [
+        "Enabled",
+        "StartOn"
+      ],
+      "state": []
+    },
+    {
+      "id": "tacticalfps",
+      "name": "Tactical First Person",
+      "folder": "TacticalFPS",
+      "repo": "hubertdungen/SpaceBourne2-TacticalFirstPerson",
+      "assetName": "TacticalFPS-{v}.zip",
+      "asset": "\\.zip$",
+      "planned": true,
+      "desc": "Immersive first-person combat that follows the game's own camera key.",
+      "switches": [
+        "Enabled"
+      ],
+      "state": []
+    },
+    {
+      "id": "ammo",
+      "name": "Ammo Discipline",
+      "folder": "AmmoDiscipline",
+      "repo": "hubertdungen/SpaceBourne2-AmmoDiscipline",
+      "assetName": "AmmoDiscipline-{v}.zip",
+      "asset": "\\.zip$",
+      "planned": true,
+      "desc": "Realistic ammo limits and scavenging: every magazine counts.",
+      "switches": [
+        "Enabled"
+      ],
+      "state": []
+    },
+    {
+      "id": "getoutoftheway",
+      "name": "Get Out of the Way",
+      "folder": "GetOutOfTheWay",
+      "repo": "hubertdungen/SpaceBourne2-GetOutOfTheWay",
+      "assetName": "GetOutOfTheWay-{v}.zip",
+      "asset": "\\.zip$",
+      "planned": true,
+      "desc": "NPCs step aside naturally when you walk through them.",
+      "switches": [
+        "Enabled"
+      ],
+      "state": []
+    },
+    {
+      "id": "groundwaypoints",
+      "name": "Ground Waypoints",
+      "folder": "GroundWaypoints",
+      "repo": "hubertdungen/SpaceBourne2-GroundWaypoints",
+      "assetName": "GroundWaypoints-{v}.zip",
+      "asset": "\\.zip$",
+      "planned": true,
+      "desc": "Planet waypoints on foot and on the hoverbike.",
+      "switches": [
+        "Enabled"
+      ],
       "state": []
     },
     {
@@ -72,6 +163,7 @@
       "name": "SB2 HOTAS (optional)",
       "folder": "SB2HOTAS",
       "repo": "hubertdungen/SpaceBourne2-HOTAS",
+      "assetName": "SB2-HOTAS-{v}.zip",
       "nexus": 8,
       "external": true,
       "desc": "Joystick, HOTAS, pedals, head tracking, triple screen. Installed by its own bridge app.",

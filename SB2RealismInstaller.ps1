@@ -129,26 +129,46 @@ function Get-Installed($m) {
     return @{ Version = $ver; Active = $active }
 }
 
+# Latest release tag from github.com's own redirect, not the API: the API allows only 60 requests an hour.
+function Get-LatestTag([string]$repo) {
+    $req = [Net.HttpWebRequest]::Create("https://github.com/$repo/releases/latest")
+    $req.AllowAutoRedirect = $false; $req.Method = 'HEAD'; $req.Timeout = 15000; $req.UserAgent = "SB2RealismInstaller/$AppVersion"
+    $resp = $req.GetResponse()
+    try { $loc = $resp.Headers['Location'] } finally { $resp.Close() }
+    if ($loc -match '/releases/tag/([^/?#]+)$') { return [Uri]::UnescapeDataString($Matches[1]) }
+    throw "No release yet for $repo."
+}
+
+# Asset names follow the manifest's template ({v} = version); the API is only a fallback.
 function Get-LatestRelease($m) {
-    $r = Invoke-RestMethod "https://api.github.com/repos/$($m.repo)/releases/latest" -TimeoutSec 15
+    $tag = Get-LatestTag $m.repo
+    $v = $tag.TrimStart('v')
     $url = $null
-    if ($m.asset) {
-        $a = @($r.assets | Where-Object { $_.name -match $m.asset }) | Select-Object -First 1
-        if ($a) { $url = $a.browser_download_url }
-    }
-    return @{ Version = $r.tag_name.TrimStart('v'); Url = $url; Page = $r.html_url }
+    if ($m.assetName) { $url = "https://github.com/$($m.repo)/releases/download/$tag/" + ($m.assetName -replace '\{v\}', $v) }
+    return @{ Version = $v; Url = $url; Tag = $tag }
+}
+
+function Get-AssetUrlFromApi($m) {
+    $r = Invoke-RestMethod "https://api.github.com/repos/$($m.repo)/releases/latest" -TimeoutSec 15
+    $a = @($r.assets | Where-Object { $_.name -match $m.asset }) | Select-Object -First 1
+    if ($a) { return $a.browser_download_url }
+    return $null
 }
 
 function Update-Latest($mods) {
     foreach ($m in $mods) {
         try { $script:Latest[$m.id] = Get-LatestRelease $m }
-        catch { Log "  Could not check $($m.name): $($_.Exception.Message)" }
+        catch { if (-not $m.planned) { Log "  Could not check $($m.name): $($_.Exception.Message)" } }
     }
 }
+
+# A planned mod becomes a normal one as soon as its repo has a release: no installer update needed.
+function Test-ComingSoon($m) { [bool]($m.planned -and -not $script:Latest[$m.id] -and -not (Get-Installed $m)) }
 
 function Get-StatusText($m) {
     $inst = Get-Installed $m
     $lat = $script:Latest[$m.id]
+    if (Test-ComingSoon $m) { return 'coming soon' }
     if (-not $inst) { return 'not installed' }
     $s = if ($inst.Active) { 'active' } else { 'installed, off' }
     if ($lat -and $inst.Version -ne '?') {
@@ -175,17 +195,25 @@ function Install-ModFiles($m) {
     if ($m.external) { throw "$($m.name) is installed by its own app." }
     $lat = $script:Latest[$m.id]
     if (-not $lat) { $lat = Get-LatestRelease $m; $script:Latest[$m.id] = $lat }
-    if (-not $lat.Url) { throw "No download found for $($m.name)." }
     $tmp = Join-Path $env:TEMP ('SB2Realism_' + [guid]::NewGuid().ToString('N'))
     New-Item -ItemType Directory -Force $tmp | Out-Null
     try {
         Log "  Downloading $($m.name) $($lat.Version)..."
         $zip = Join-Path $tmp 'mod.zip'
-        Invoke-WebRequest $lat.Url -OutFile $zip -UseBasicParsing
+        $got = $false
+        if ($lat.Url) { try { Invoke-WebRequest $lat.Url -OutFile $zip -UseBasicParsing; $got = $true } catch { } }
+        if (-not $got -and $m.asset) {
+            $u = Get-AssetUrlFromApi $m
+            if ($u) { Invoke-WebRequest $u -OutFile $zip -UseBasicParsing; $got = $true }
+        }
+        if (-not $got) { throw "No download found for $($m.name) $($lat.Version)." }
         Expand-Archive $zip (Join-Path $tmp 'x') -Force
-        $src = Get-ChildItem (Join-Path $tmp 'x') -Recurse -Directory |
-            Where-Object { $_.Name -eq $m.folder -and (Test-Path (Join-Path $_.FullName 'scripts\main.lua')) } |
-            Select-Object -First 1
+        $cands = @(Get-ChildItem (Join-Path $tmp 'x') -Recurse -Directory | Where-Object { Test-Path (Join-Path $_.FullName 'scripts\main.lua') })
+        $src = @($cands | Where-Object { $_.Name -eq $m.folder }) | Select-Object -First 1
+        if (-not $src -and $cands.Count -eq 1) {
+            # the release uses another folder name: install under that name
+            $src = $cands[0]; $m.folder = $src.Name
+        }
         if (-not $src) { throw "The download has no $($m.folder) folder." }
         $dest = ModDir $m
         Backup-ModDir $m
@@ -253,14 +281,14 @@ function Install-UE4SSFiles {
     if (Test-UE4SS) { Log 'UE4SS is already installed.'; return }
     if (Test-Path (Join-Path $w 'dwmapi.dll')) { throw 'The game folder already has a dwmapi.dll from another mod loader. Remove it first.' }
     # UE4SS 3.0.1 ships inside Hardcore Tactical Realism's full release (MIT licence notice included there).
-    $r = Invoke-RestMethod 'https://api.github.com/repos/hubertdungen/SpaceBourne2-HardcoreTacticalRealism/releases/latest' -TimeoutSec 15
-    $a = @($r.assets | Where-Object { $_.name -match '^HardcoreTacticalRealism-[\d.]+\.zip$' }) | Select-Object -First 1
-    if (-not $a) { throw 'UE4SS download not found.' }
+    $htrRepo = 'hubertdungen/SpaceBourne2-HardcoreTacticalRealism'
+    $tag = Get-LatestTag $htrRepo
+    $url = "https://github.com/$htrRepo/releases/download/$tag/HardcoreTacticalRealism-$($tag.TrimStart('v')).zip"
     $tmp = Join-Path $env:TEMP ('SB2Realism_' + [guid]::NewGuid().ToString('N'))
     New-Item -ItemType Directory -Force $tmp | Out-Null
     try {
         Log 'Downloading UE4SS 3.0.1...'
-        Invoke-WebRequest $a.browser_download_url -OutFile (Join-Path $tmp 'u.zip') -UseBasicParsing
+        Invoke-WebRequest $url -OutFile (Join-Path $tmp 'u.zip') -UseBasicParsing
         Expand-Archive (Join-Path $tmp 'u.zip') (Join-Path $tmp 'x') -Force
         $u = Join-Path $tmp 'x\ue4ss'
         Copy-Item (Join-Path $u 'dwmapi.dll'), (Join-Path $u 'UE4SS.dll') $w -Force
@@ -281,6 +309,8 @@ function Invoke-Apply($mods, [string[]]$ticked, [scriptblock]$askRemove) {
         $inst = Get-Installed $m
         if ($ticked -contains $m.id) {
             Log "$($m.name):"
+            if ($m.planned -and -not $script:Latest[$m.id]) { try { $script:Latest[$m.id] = Get-LatestRelease $m } catch { } }
+            if (Test-ComingSoon $m) { Log '  coming soon: not released yet.'; continue }
             if ($m.external) {
                 if ($inst) { Set-ModsTxt $m.folder $true; Log '  active (updates come from its own app).' }
                 else { Log "  Install it with its own app: https://www.nexusmods.com/spacebourne2/mods/$($m.nexus)" }
@@ -324,8 +354,8 @@ function Invoke-UpdateAll($mods) {
 
 function Test-InstallerUpdate {
     try {
-        $r = Invoke-RestMethod "https://api.github.com/repos/$AppRepo/releases/latest" -TimeoutSec 8
-        if ((Compare-Ver $AppVersion $r.tag_name) -lt 0) { Log "A newer installer is available: $($r.tag_name) - $($r.html_url)" }
+        $tag = Get-LatestTag $AppRepo
+        if ((Compare-Ver $AppVersion $tag) -lt 0) { Log "A newer installer is available: $tag - https://github.com/$AppRepo/releases/latest" }
     } catch { }
 }
 
@@ -441,6 +471,7 @@ function Update-View {
         [void]$it.SubItems.Add($m.desc)
         $it.Checked = [bool]($inst -and $inst.Active)
         $it.Tag = $m
+        if ($ok -and (Test-ComingSoon $m)) { $it.ForeColor = [System.Drawing.Color]::Gray }
         [void]$lv.Items.Add($it)
     }
     $lv.EndUpdate()
@@ -476,9 +507,16 @@ $bApply.Add_Click({
 $bPage.Add_Click({
     $sel = $lv.SelectedItems
     if ($sel.Count -eq 0) { Log 'Select a mod first.'; return }
-    Start-Process "https://www.nexusmods.com/spacebourne2/mods/$($sel[0].Tag.nexus)"
+    $m = $sel[0].Tag
+    if ($m.nexus) { Start-Process "https://www.nexusmods.com/spacebourne2/mods/$($m.nexus)" }
+    else { Start-Process "https://github.com/$($m.repo)" }
 })
 $lv.Add_DoubleClick({ $bPage.PerformClick() })
+$lv.Add_ItemCheck({
+    param($s, $e)
+    $m = $lv.Items[$e.Index].Tag
+    if ($e.NewValue -eq 'Checked' -and $m -and (Test-ComingSoon $m)) { $e.NewValue = 'Unchecked'; Log "$($m.name) is coming soon: not released yet." }
+})
 $cbStart.Add_CheckedChanged({
     try {
         New-Item -ItemType Directory -Force $DataDir | Out-Null

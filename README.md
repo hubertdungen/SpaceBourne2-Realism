@@ -44,7 +44,7 @@ When Windows asks, allow the script to run. It is plain PowerShell, so you can r
 
 SB2 HOTAS has its own bridge app, and that app installs and updates it. The installer shows its state and links to it.
 
-Coming soon: Tactical First Person, Ammo Discipline, Get Out of the Way and Ground Waypoints. The installer reads its mod list from this repository (`mods.json`), so new mods show up without downloading a new installer.
+**Coming soon:** Tactical First Person, Ammo Discipline, Get Out of the Way and Ground Waypoints. They are already in the installer's list, greyed out as "coming soon". Each one becomes installable on its own as soon as it is released, without a new installer.
 
 ## Details
 

@@ -47,10 +47,11 @@ When Windows asks, allow the script to run. It is plain PowerShell, so you can r
 | Tactical Engineering | Deployable turrets that take time to set up | [GitHub](https://github.com/hubertdungen/SpaceBourne2-TacticalEngineering) · [Nexus](https://www.nexusmods.com/spacebourne2/mods/10) |
 | Ammo Discipline | Realistic ammo limits and scavenging: every magazine counts | [GitHub](https://github.com/hubertdungen/SpaceBourne2-AmmoDiscipline) · [Nexus](https://www.nexusmods.com/spacebourne2/mods/12) |
 | Ground Waypoints | Planet waypoints on foot and on the hoverbike | [GitHub](https://github.com/hubertdungen/SpaceBourne2-GroundWaypoints) · [Nexus](https://www.nexusmods.com/spacebourne2/mods/13) |
+| Get Out of the Way | NPCs step aside naturally when you walk through them | [GitHub](https://github.com/hubertdungen/SpaceBourne2-GetOutOfTheWay) · [Nexus](https://www.nexusmods.com/spacebourne2/mods/14) |
 
 SB2 HOTAS has its own bridge app. When you tick it, the installer downloads the app to `%LOCALAPPDATA%\SB2Realism\apps\hotas` and runs its own install for the in-game part. **Update all** keeps that copy up to date. Your controller setup is kept, because the bridge saves it in `%LOCALAPPDATA%\SB2HOTAS`. If you already use your own copy of the bridge, that's fine too: **Play** notices it running.
 
-**Coming soon:** Tactical First Person and Get Out of the Way. They are already in the installer's list, greyed out as "coming soon". Each one becomes installable on its own as soon as it is released, without a new installer.
+**Coming soon:** Tactical First Person. They are already in the installer's list, greyed out as "coming soon". Each one becomes installable on its own as soon as it is released, without a new installer.
 
 ## Details
 

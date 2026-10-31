@@ -137,12 +137,12 @@
       "repo": "hubertdungen/SpaceBourne2-GetOutOfTheWay",
       "assetName": "GetOutOfTheWay-{v}.zip",
       "asset": "\\.zip$",
-      "planned": true,
       "desc": "NPCs step aside naturally when you walk through them.",
       "switches": [
         "Enabled"
       ],
-      "state": []
+      "state": [],
+      "nexus": 14
     },
     {
       "id": "groundwaypoints",

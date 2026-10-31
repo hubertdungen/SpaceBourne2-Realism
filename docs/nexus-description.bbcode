@@ -26,31 +26,29 @@ One window to install, switch on and update the whole SpaceBourne 2 realism mod 
 
 What the buttons do:
 
-[code]
-Button             What it does
-Play               Starts SpaceBourne 2 (through Steam for Steam copies). When SB2 HOTAS is on, it starts its bridge app first.
-Apply ticks        Installs and switches on every ticked mod. Switches off every unticked mod; you choose whether its files are deleted (a backup is kept).
-Update all         Installs the newest release of every installed mod that has one.
-Check for updates  Asks GitHub for the newest versions. It also runs when the window opens, unless you untick that option.
-Open mod page      Opens the selected mod's Nexus page. Double-clicking a row does the same.
-Open SB2 HOTAS     Opens the SB2 HOTAS bridge app, which must run while you play. The first time, it offers to download it (about 50 MB).
-[/code]
+[list]
+[*][b]Play[/b]: Starts SpaceBourne 2 (through Steam for Steam copies). When SB2 HOTAS is on, it starts its bridge app first.
+[*][b]Apply ticks[/b]: Installs and switches on every ticked mod. Switches off every unticked mod; you choose whether its files are deleted (a backup is kept).
+[*][b]Update all[/b]: Installs the newest release of every installed mod that has one.
+[*][b]Check for updates[/b]: Asks GitHub for the newest versions. It also runs when the window opens, unless you untick that option.
+[*][b]Open mod page[/b]: Opens the selected mod's Nexus page. Double-clicking a row does the same.
+[*][b]Open SB2 HOTAS[/b]: Opens the SB2 HOTAS bridge app, which must run while you play. The first time, it offers to download it (about 50 MB).
+[/list]
 
 When Windows asks, allow the script to run. It is plain PowerShell, so you can read every line in SB2RealismInstaller.ps1.
 
 [line]
 [size=5][b]The realism set[/b][/size]
 
-[code]
-Mod                              What it does                                                                    Links
-Hardcore Tactical Realism (HTR)  Combat and AI overhaul: caliber vs armor, hit zones, wounds, faction doctrines  [GitHub](https://github.com/hubertdungen/SpaceBourne2-HardcoreTacticalRealism) · [Nexus](https://www.nexusmods.com/spacebourne2/mods/4) · [Steam](https://steamcommunity.com/app/1646850/discussions/0/573805072991123580/)
-Split Controls                   Separate look inversion for ships and on foot                                   [GitHub](https://github.com/hubertdungen/SpaceBourne2-SplitControls) · [Nexus](https://www.nexusmods.com/spacebourne2/mods/5)
-Silent Ops                       Realistic stealth, suppressors, silent takedowns                                [GitHub](https://github.com/hubertdungen/SpaceBourne2-SilentOps) · [Nexus](https://www.nexusmods.com/spacebourne2/mods/6)
-Gear Without Levels              Any weapon or suit at any level, with small penalties                           [GitHub](https://github.com/hubertdungen/SpaceBourne2-GearWithoutLevels) · [Nexus](https://www.nexusmods.com/spacebourne2/mods/7)
-SB2 HOTAS                        Joystick, HOTAS, pedals, head tracking, triple screen                           [GitHub](https://github.com/hubertdungen/SpaceBourne2-HOTAS) · [Nexus](https://www.nexusmods.com/spacebourne2/mods/8)
-Faction Power                    Dungeons, sales and missions earn your faction power                            [GitHub](https://github.com/hubertdungen/SpaceBourne2-FactionPower) · [Nexus](https://www.nexusmods.com/spacebourne2/mods/9)
-Tactical Engineering             Deployable turrets that take time to set up                                     [GitHub](https://github.com/hubertdungen/SpaceBourne2-TacticalEngineering) · [Nexus](https://www.nexusmods.com/spacebourne2/mods/10)
-[/code]
+[list]
+[*][b]Hardcore Tactical Realism (HTR)[/b]: Combat and AI overhaul: caliber vs armor, hit zones, wounds, faction doctrines - [url=https://github.com/hubertdungen/SpaceBourne2-HardcoreTacticalRealism]GitHub[/url] · [url=https://www.nexusmods.com/spacebourne2/mods/4]Nexus[/url] · [url=https://steamcommunity.com/app/1646850/discussions/0/573805072991123580/]Steam[/url]
+[*][b]Split Controls[/b]: Separate look inversion for ships and on foot - [url=https://github.com/hubertdungen/SpaceBourne2-SplitControls]GitHub[/url] · [url=https://www.nexusmods.com/spacebourne2/mods/5]Nexus[/url]
+[*][b]Silent Ops[/b]: Realistic stealth, suppressors, silent takedowns - [url=https://github.com/hubertdungen/SpaceBourne2-SilentOps]GitHub[/url] · [url=https://www.nexusmods.com/spacebourne2/mods/6]Nexus[/url]
+[*][b]Gear Without Levels[/b]: Any weapon or suit at any level, with small penalties - [url=https://github.com/hubertdungen/SpaceBourne2-GearWithoutLevels]GitHub[/url] · [url=https://www.nexusmods.com/spacebourne2/mods/7]Nexus[/url]
+[*][b]SB2 HOTAS[/b]: Joystick, HOTAS, pedals, head tracking, triple screen - [url=https://github.com/hubertdungen/SpaceBourne2-HOTAS]GitHub[/url] · [url=https://www.nexusmods.com/spacebourne2/mods/8]Nexus[/url]
+[*][b]Faction Power[/b]: Dungeons, sales and missions earn your faction power - [url=https://github.com/hubertdungen/SpaceBourne2-FactionPower]GitHub[/url] · [url=https://www.nexusmods.com/spacebourne2/mods/9]Nexus[/url]
+[*][b]Tactical Engineering[/b]: Deployable turrets that take time to set up - [url=https://github.com/hubertdungen/SpaceBourne2-TacticalEngineering]GitHub[/url] · [url=https://www.nexusmods.com/spacebourne2/mods/10]Nexus[/url]
+[/list]
 
 SB2 HOTAS has its own bridge app. When you tick it, the installer downloads the app to %LOCALAPPDATA%\SB2Realism\apps\hotas and runs its own install for the in-game part. [b]Update all[/b] keeps that copy up to date. Your controller setup is kept, because the bridge saves it in %LOCALAPPDATA%\SB2HOTAS. If you already use your own copy of the bridge, that's fine too: [b]Play[/b] notices it running.
 

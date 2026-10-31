@@ -34,6 +34,8 @@ When Windows asks, allow the script to run. It is plain PowerShell, so you can r
 
 ## The realism set
 
+**HTR is the core, the rest are extras, and every mod also works alone.** The set was designed around Hardcore Tactical Realism as the core mod, with each other mod adding one part of the realism collection on top of it. HTR is not required, though: every mod works on its own, in any combination. We tested all the extras together without HTR, in game and on foot, with no errors. Tick only what you want.
+
 | Mod | What it does | Links |
 |---|---|---|
 | Hardcore Tactical Realism (HTR) | Combat and AI overhaul: caliber vs armor, hit zones, wounds, faction doctrines | [GitHub](https://github.com/hubertdungen/SpaceBourne2-HardcoreTacticalRealism) · [Nexus](https://www.nexusmods.com/spacebourne2/mods/4) · [Steam](https://steamcommunity.com/app/1646850/discussions/0/573805072991123580/) |

@@ -123,12 +123,12 @@
       "repo": "hubertdungen/SpaceBourne2-AmmoDiscipline",
       "assetName": "AmmoDiscipline-{v}.zip",
       "asset": "\\.zip$",
-      "planned": true,
       "desc": "Realistic ammo limits and scavenging: every magazine counts.",
       "switches": [
         "Enabled"
       ],
-      "state": []
+      "state": [],
+      "nexus": 12
     },
     {
       "id": "getoutoftheway",

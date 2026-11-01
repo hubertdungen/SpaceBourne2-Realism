@@ -165,7 +165,7 @@
       "repo": "hubertdungen/SpaceBourne2-ClearHUD",
       "assetName": "ClearHUD-{v}.zip",
       "asset": "\\.zip$",
-      "planned": true,
+      "nexus": 16,
       "desc": "A reticle you can see and HUD colours of your choice.",
       "switches": [
         "Enabled"

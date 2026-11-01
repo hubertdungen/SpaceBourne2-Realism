@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1 — 2026-11-01
+
+- **Colours at a glance:**
+  - Yellow rows have an update waiting, and the **Update all** button turns yellow too and shows how many.
+  - Green rows are installed and up to date.
+  - White rows are not installed.
+
 ## 0.2.0 — 2026-10-31
 
 - **Play button.** Starts SpaceBourne 2, through Steam for Steam copies. When SB2 HOTAS is on, it starts the HOTAS bridge first.

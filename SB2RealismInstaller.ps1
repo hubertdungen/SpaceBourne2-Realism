@@ -17,7 +17,7 @@ param(
     [string]$Manifest
 )
 $ErrorActionPreference = 'Stop'
-$AppVersion = '0.2.0'
+$AppVersion = '0.2.1'
 $AppRepo = 'hubertdungen/SpaceBourne2-Realism'
 $ManifestUrl = "https://raw.githubusercontent.com/$AppRepo/main/mods.json"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -486,7 +486,10 @@ function New-Button([string]$text, [int]$w) {
 $bPlay = New-Button 'Play' 90
 $bPlay.Font = New-Object System.Drawing.Font('Segoe UI', 9, [System.Drawing.FontStyle]::Bold)
 $bApply = New-Button 'Apply ticks' 110
-$bUpdate = New-Button 'Update all' 100
+$bUpdate = New-Button 'Update all' 120
+$ColUpdate = [System.Drawing.Color]::FromArgb(255, 236, 140)     # row: update available
+$ColUpdateBtn = [System.Drawing.Color]::FromArgb(255, 205, 40)   # Update all button when there is one
+$ColOk = [System.Drawing.Color]::FromArgb(198, 239, 198)         # row: installed and up to date
 $bCheck = New-Button 'Check for updates' 140
 $bPage = New-Button 'Open mod page' 120
 $bHotas = New-Button 'Open SB2 HOTAS' 130
@@ -532,6 +535,7 @@ function Update-View {
     else { $lblUe.Text = ''; $bUe.Visible = $false }
     $top.SetFlowBreak($lblUe, -not $bUe.Visible)
     $lv.BeginUpdate(); $lv.Items.Clear()
+    $updates = 0
     foreach ($m in $script:Mods) {
         $inst = if ($ok) { Get-Installed $m } else { $null }
         $lat = $script:Latest[$m.id]
@@ -542,11 +546,20 @@ function Update-View {
         [void]$it.SubItems.Add($m.desc)
         $it.Checked = [bool]($inst -and $inst.Active)
         $it.Tag = $m
+        # yellow = update available, green = installed and up to date, white = not installed
         if ($ok -and (Test-ComingSoon $m)) { $it.ForeColor = [System.Drawing.Color]::Gray }
+        elseif ($inst -and $lat -and $inst.Version -ne '?' -and (Compare-Ver $inst.Version $lat.Version) -lt 0) {
+            $it.BackColor = $ColUpdate; $updates++
+        } elseif ($inst) { $it.BackColor = $ColOk }
         [void]$lv.Items.Add($it)
     }
     $lv.EndUpdate()
     foreach ($c in @($bApply, $bUpdate, $bCheck, $bPlay)) { $c.Enabled = $ok }
+    if ($updates -gt 0) {
+        $bUpdate.BackColor = $ColUpdateBtn; $bUpdate.Text = "Update all ($updates)"
+    } else {
+        $bUpdate.BackColor = [System.Drawing.SystemColors]::Control; $bUpdate.UseVisualStyleBackColor = $true; $bUpdate.Text = 'Update all'
+    }
     $hm = @($script:Mods | Where-Object { $_.app }) | Select-Object -First 1
     $bHotas.Visible = [bool]$hm
     if ($hm) { $bHotas.Enabled = $ok -and [bool](Get-Installed $hm) }

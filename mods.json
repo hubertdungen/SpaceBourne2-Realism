@@ -193,7 +193,7 @@
       "repo": "hubertdungen/SpaceBourne2-BiggerArmies",
       "assetName": "BiggerArmies-{v}.zip",
       "asset": "\\.zip$",
-      "planned": true,
+      "nexus": 17,
       "desc": "More general slots for your faction, so you can field twice as many ground and space forces.",
       "switches": [
         "Enabled"

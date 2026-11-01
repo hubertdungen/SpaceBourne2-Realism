@@ -60,6 +60,7 @@ SB2 HOTAS has its own bridge app. When you tick it, the installer downloads the 
   - It sets the master switch in `config.lua`, e.g. `Enabled` (and `StartOn` for Tactical Engineering).
   - If the mod remembers an in-game toggle, it resets that toggle to on.
   - Optional extras inside a mod keep your choice, e.g. HTR's gear bonus.
+- **Choices at install.** When you first install Clear HUD, a small window asks for the reticle colour and the HUD colour. Close it to keep the defaults. You can change them later in `ClearHUD\scripts\config.lua`.
 - **Command line** (for scripts):
   ```
   powershell -ExecutionPolicy Bypass -File SB2RealismInstaller.ps1 -NoGui -List

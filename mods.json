@@ -170,7 +170,21 @@
       "switches": [
         "Enabled"
       ],
-      "state": []
+      "state": [],
+      "choices": [
+        {
+          "label": "Reticle colour",
+          "section": "Reticle",
+          "key": "Preset",
+          "options": ["Green", "Yellow", "Orange", "Red", "Magenta", "Cyan", "White", "Game"]
+        },
+        {
+          "label": "HUD colour",
+          "section": "Theme",
+          "key": "Preset",
+          "options": ["Game", "Amber", "Green", "Red", "Blue", "Purple", "White"]
+        }
+      ]
     },
     {
       "id": "biggerarmies",

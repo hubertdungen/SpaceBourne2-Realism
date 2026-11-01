@@ -17,7 +17,7 @@ param(
     [string]$Manifest
 )
 $ErrorActionPreference = 'Stop'
-$AppVersion = '0.2.2'
+$AppVersion = '0.2.3'
 $AppRepo = 'hubertdungen/SpaceBourne2-Realism'
 $ManifestUrl = "https://raw.githubusercontent.com/$AppRepo/main/mods.json"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -323,6 +323,28 @@ function Enable-Mod($m) {
     Log "  $($m.name) is active."
 }
 
+# Choices a mod offers at install (mods.json "choices"): writes Key = "value" inside its section of config.lua.
+function Set-ModChoices($m, $values) {
+    $cfg = Join-Path (ModDir $m) 'scripts\config.lua'
+    if (-not $values -or -not (Test-Path $cfg)) { return }
+    $t = Read-Text $cfg; $orig = $t
+    foreach ($c in @($m.choices)) {
+        $v = $values[$c.label]
+        if (-not $v) { continue }
+        $start = 0
+        if ($c.section) {
+            $s = [regex]::Match($t, "(?m)^\s*$([regex]::Escape($c.section))\s*=\s*\{")
+            if (-not $s.Success) { continue }
+            $start = $s.Index + $s.Length
+        }
+        $k = (New-Object regex ("(?<![A-Za-z_])$([regex]::Escape($c.key))\s*=\s*""[^""]*""")).Match($t, $start)
+        if (-not $k.Success) { continue }
+        $t = $t.Substring(0, $k.Index) + "$($c.key) = ""$v""" + $t.Substring($k.Index + $k.Length)
+        Log "  $($c.label): $v"
+    }
+    if ($t -ne $orig) { Write-Text $cfg $t; Log "  You can change it later in $($m.folder)\scripts\config.lua." }
+}
+
 function Disable-Mod($m, [bool]$remove) {
     if (Test-Path (ModDir $m)) {
         Set-ModsTxt $m.folder $false
@@ -363,7 +385,7 @@ function Install-UE4SSFiles {
 }
 
 # Ticked = the full wanted set. Returns nothing; logs each step.
-function Invoke-Apply($mods, [string[]]$ticked, [scriptblock]$askRemove) {
+function Invoke-Apply($mods, [string[]]$ticked, [scriptblock]$askRemove, [scriptblock]$askChoices = $null) {
     if (Test-GameRunning) { throw 'Close SpaceBourne 2 first.' }
     if (-not (Test-UE4SS)) { Install-UE4SSFiles }
     foreach ($m in $mods) {
@@ -381,7 +403,12 @@ function Invoke-Apply($mods, [string[]]$ticked, [scriptblock]$askRemove) {
                 continue
             }
             try {
-                if (-not $inst) { Install-ModFiles $m }
+                if (-not $inst) {
+                    $values = $null
+                    if ($askChoices -and $m.choices) { $values = & $askChoices $m }
+                    Install-ModFiles $m
+                    Set-ModChoices $m $values
+                }
                 Enable-Mod $m
             } catch { Log "  FAILED: $($_.Exception.Message)" }
         } elseif ($inst -and $inst.Active) {
@@ -588,6 +615,32 @@ $bBrowse.Add_Click({
 $bUe.Add_Click({ Invoke-Safe { Install-UE4SSFiles } })
 $bCheck.Add_Click({ Invoke-Safe { Log 'Checking GitHub for new versions...'; Update-Latest $script:Mods; Test-InstallerUpdate; Log 'Done.' } })
 $bUpdate.Add_Click({ Invoke-Safe { Invoke-UpdateAll $script:Mods } })
+# Asks a mod's install choices (e.g. Clear HUD's colours). Closing the window keeps the mod's defaults.
+function Show-ChoicesDialog($m) {
+    $d = New-Object System.Windows.Forms.Form
+    $d.Text = "$($m.name): choose"
+    $d.FormBorderStyle = 'FixedDialog'; $d.StartPosition = 'CenterParent'; $d.MaximizeBox = $false; $d.MinimizeBox = $false
+    $d.Font = $form.Font
+    $d.ClientSize = New-Object System.Drawing.Size(340, (56 + 34 * @($m.choices).Count))
+    $boxes = @{}; $y = 14
+    foreach ($c in @($m.choices)) {
+        $l = New-Object System.Windows.Forms.Label
+        $l.Text = $c.label; $l.AutoSize = $true; $l.Location = New-Object System.Drawing.Point(14, ($y + 4))
+        $d.Controls.Add($l)
+        $cb = New-Object System.Windows.Forms.ComboBox
+        $cb.DropDownStyle = 'DropDownList'; $cb.Width = 170; $cb.Location = New-Object System.Drawing.Point(150, $y)
+        [void]$cb.Items.AddRange([object[]]@($c.options)); $cb.SelectedIndex = 0
+        $d.Controls.Add($cb); $boxes[$c.label] = $cb; $y += 34
+    }
+    $ok = New-Object System.Windows.Forms.Button
+    $ok.Text = 'OK'; $ok.DialogResult = 'OK'; $ok.Location = New-Object System.Drawing.Point(245, ($y + 4))
+    $d.Controls.Add($ok); $d.AcceptButton = $ok
+    if ($d.ShowDialog($form) -ne 'OK') { return $null }
+    $v = @{}
+    foreach ($k in $boxes.Keys) { $v[$k] = [string]$boxes[$k].SelectedItem }
+    return $v
+}
+
 $bApply.Add_Click({
     $ticked = @($lv.Items | Where-Object { $_.Checked } | ForEach-Object { $_.Tag.id })
     $ask = {
@@ -595,7 +648,7 @@ $bApply.Add_Click({
         $r = [System.Windows.Forms.MessageBox]::Show($form, "Switch off $($m.name)?`n`nYes = switch off and delete its files (a backup is kept)`nNo = switch off, keep the files`nCancel = leave it on", 'SB2 Realism', 'YesNoCancel', 'Question')
         if ($r -eq 'Yes') { return $true } elseif ($r -eq 'No') { return $false } else { return $null }
     }
-    Invoke-Safe { Invoke-Apply $script:Mods $ticked $ask }
+    Invoke-Safe { Invoke-Apply $script:Mods $ticked $ask ${function:Show-ChoicesDialog} }
 })
 # Opens the app of a mod that needs one (SB2 HOTAS). Without the installer's own copy yet, offer to download it.
 function Open-ModApp($m, [bool]$ask) {

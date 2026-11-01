@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.3 — 2026-11-01
+
+- **Pick Clear HUD's colours when you install it.** Ticking Clear HUD and pressing **Apply ticks** asks for the reticle colour and the HUD colour. Closing that window keeps the defaults: a green reticle and the game's HUD colour. You can change them later in `ClearHUD\scripts\config.lua`.
+- Clear HUD is out (Nexus 16).
+
 ## 0.2.2 — 2026-11-01
 
 - **Update all keeps SB2 HOTAS switched off if you had it off.** Before, updating the bridge also switched the in-game part on.

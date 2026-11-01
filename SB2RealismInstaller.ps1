@@ -17,7 +17,7 @@ param(
     [string]$Manifest
 )
 $ErrorActionPreference = 'Stop'
-$AppVersion = '0.2.1'
+$AppVersion = '0.2.2'
 $AppRepo = 'hubertdungen/SpaceBourne2-Realism'
 $ManifestUrl = "https://raw.githubusercontent.com/$AppRepo/main/mods.json"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -407,7 +407,13 @@ function Invoke-UpdateAll($mods) {
         $any = $true
         Log "$($m.name): $($inst.Version) -> $($lat.Version)"
         if ($m.external) {
-            if ($m.app) { try { Install-AppFiles $m } catch { Log "  FAILED: $($_.Exception.Message)" } }
+            if ($m.app) {
+                try {
+                    Install-AppFiles $m
+                    # its own install script switches the mod on; an update keeps it as it was
+                    if (-not $inst.Active) { Set-ModsTxt $m.folder $false; Log "  $($m.name) stays switched off, as it was." }
+                } catch { Log "  FAILED: $($_.Exception.Message)" }
+            }
             else { Log '  Update it from its own app or its page.' }
             continue
         }

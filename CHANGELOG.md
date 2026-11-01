@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.2 — 2026-11-01
+
+- **Update all keeps SB2 HOTAS switched off if you had it off.** Before, updating the bridge also switched the in-game part on.
+- Clear HUD and Bigger Armies are listed as coming soon.
+
 ## 0.2.1 — 2026-11-01
 
 - **Colours at a glance:**

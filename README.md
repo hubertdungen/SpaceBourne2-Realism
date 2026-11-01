@@ -49,6 +49,8 @@ When Windows asks, allow the script to run. It is plain PowerShell, so you can r
 | Ground Waypoints | Planet waypoints on foot and on the hoverbike | [GitHub](https://github.com/hubertdungen/SpaceBourne2-GroundWaypoints) · [Nexus](https://www.nexusmods.com/spacebourne2/mods/13) |
 | Get Out of the Way | NPCs step aside naturally when you walk through them | [GitHub](https://github.com/hubertdungen/SpaceBourne2-GetOutOfTheWay) · [Nexus](https://www.nexusmods.com/spacebourne2/mods/14) |
 | Tactical First Person | First person on foot with weapons held up and aim down the sights | [GitHub](https://github.com/hubertdungen/SpaceBourne2-TacticalFirstPerson) · [Nexus](https://www.nexusmods.com/spacebourne2/mods/15) |
+| Clear HUD | A reticle you can see and HUD colours of your choice | [GitHub](https://github.com/hubertdungen/SpaceBourne2-ClearHUD) · [Nexus](https://www.nexusmods.com/spacebourne2/mods/16) |
+| Bigger Armies | More general slots for your faction: twice the ground and space forces | [GitHub](https://github.com/hubertdungen/SpaceBourne2-BiggerArmies) · [Nexus](https://www.nexusmods.com/spacebourne2/mods/17) |
 
 SB2 HOTAS has its own bridge app. When you tick it, the installer downloads the app to `%LOCALAPPDATA%\SB2Realism\apps\hotas` and runs its own install for the in-game part. **Update all** keeps that copy up to date. Your controller setup is kept, because the bridge saves it in `%LOCALAPPDATA%\SB2HOTAS`. If you already use your own copy of the bridge, that's fine too: **Play** notices it running.
 

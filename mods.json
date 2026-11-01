@@ -159,6 +159,34 @@
       "nexus": 13
     },
     {
+      "id": "clearhud",
+      "name": "Clear HUD",
+      "folder": "ClearHUD",
+      "repo": "hubertdungen/SpaceBourne2-ClearHUD",
+      "assetName": "ClearHUD-{v}.zip",
+      "asset": "\\.zip$",
+      "planned": true,
+      "desc": "A reticle you can see, HUD colours of your choice, and optional hiding of enemy markers and damage numbers.",
+      "switches": [
+        "Enabled"
+      ],
+      "state": []
+    },
+    {
+      "id": "biggerarmies",
+      "name": "Bigger Armies",
+      "folder": "BiggerArmies",
+      "repo": "hubertdungen/SpaceBourne2-BiggerArmies",
+      "assetName": "BiggerArmies-{v}.zip",
+      "asset": "\\.zip$",
+      "planned": true,
+      "desc": "More general slots for your faction, so you can field twice as many ground and space forces.",
+      "switches": [
+        "Enabled"
+      ],
+      "state": []
+    },
+    {
       "id": "hotas",
       "name": "SB2 HOTAS (optional)",
       "folder": "SB2HOTAS",

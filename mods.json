@@ -166,7 +166,7 @@
       "assetName": "ClearHUD-{v}.zip",
       "asset": "\\.zip$",
       "planned": true,
-      "desc": "A reticle you can see, HUD colours of your choice, and optional hiding of enemy markers and damage numbers.",
+      "desc": "A reticle you can see and HUD colours of your choice.",
       "switches": [
         "Enabled"
       ],

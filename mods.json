@@ -109,12 +109,12 @@
       "repo": "hubertdungen/SpaceBourne2-TacticalFirstPerson",
       "assetName": "TacticalFPS-{v}.zip",
       "asset": "\\.zip$",
-      "planned": true,
-      "desc": "Immersive first-person combat that follows the game's own camera key.",
+      "desc": "First person on foot: the game camera key switches views, weapons held up, aim down the sights.",
       "switches": [
         "Enabled"
       ],
-      "state": []
+      "state": [],
+      "nexus": 15
     },
     {
       "id": "ammo",

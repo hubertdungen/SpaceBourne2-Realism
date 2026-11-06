@@ -6,7 +6,7 @@ One window to install, switch on and update the whole SpaceBourne 2 realism mod 
 [*][b]Pick your mods.[/b] Every mod in the set is listed with a short description. Install all of them or just one.
 [*][b]Ticked means on.[/b] Every ticked mod is installed [i]and[/i] switched on, even one that ships switched off on its own.
 [*][b]See what's out of date.[/b] It shows the version you have and the newest release on GitHub. [b]Update all[/b] downloads and installs every newer version for you.
-[*][b]Your settings stay.[/b] Updates keep your config.lua. The new defaults go next to it as config.default.lua.
+[*][b]Your settings stay.[/b] An update keeps every setting you changed in config.lua and gives the others the new release's defaults, so new tuning reaches you. The log lists the settings it kept. The defaults of your version are next to it as config.default.lua.
 [*][b]Safe.[/b] It never touches your saves or the game's executable. Before it replaces or removes a mod, it keeps a backup in %LOCALAPPDATA%\SB2Realism\backups.
 [*][b]UE4SS included.[/b] If UE4SS is missing, one click installs UE4SS 3.0.1, the version every mod in the set is built for.
 [/list]
@@ -52,6 +52,8 @@ When Windows asks, allow the script to run. It is plain PowerShell, so you can r
 [*][b]Ground Waypoints[/b]: Planet waypoints on foot and on the hoverbike (Links: [url=https://github.com/hubertdungen/SpaceBourne2-GroundWaypoints]GitHub[/url] · [url=https://www.nexusmods.com/spacebourne2/mods/13]Nexus[/url])
 [*][b]Get Out of the Way[/b]: NPCs step aside naturally when you walk through them (Links: [url=https://github.com/hubertdungen/SpaceBourne2-GetOutOfTheWay]GitHub[/url] · [url=https://www.nexusmods.com/spacebourne2/mods/14]Nexus[/url])
 [*][b]Tactical First Person[/b]: First person on foot with weapons held up and aim down the sights (Links: [url=https://github.com/hubertdungen/SpaceBourne2-TacticalFirstPerson]GitHub[/url] · [url=https://www.nexusmods.com/spacebourne2/mods/15]Nexus[/url])
+[*][b]Clear HUD[/b]: A reticle you can see and HUD colours of your choice (Links: [url=https://github.com/hubertdungen/SpaceBourne2-ClearHUD]GitHub[/url] · [url=https://www.nexusmods.com/spacebourne2/mods/16]Nexus[/url])
+[*][b]Bigger Armies[/b]: More general slots for your faction: twice the ground and space forces (Links: [url=https://github.com/hubertdungen/SpaceBourne2-BiggerArmies]GitHub[/url] · [url=https://www.nexusmods.com/spacebourne2/mods/17]Nexus[/url])
 [/list]
 
 SB2 HOTAS has its own bridge app. When you tick it, the installer downloads the app to %LOCALAPPDATA%\SB2Realism\apps\hotas and runs its own install for the in-game part. [b]Update all[/b] keeps that copy up to date. Your controller setup is kept, because the bridge saves it in %LOCALAPPDATA%\SB2HOTAS. If you already use your own copy of the bridge, that's fine too: [b]Play[/b] notices it running.
@@ -65,6 +67,7 @@ SB2 HOTAS has its own bridge app. When you tick it, the installer downloads the 
     - It sets the master switch in config.lua, e.g. Enabled (and StartOn for Tactical Engineering).
     - If the mod remembers an in-game toggle, it resets that toggle to on.
     - Optional extras inside a mod keep your choice, e.g. HTR's gear bonus.
+[*][b]Choices at install.[/b] When you first install Clear HUD, a small window asks for the reticle colour and the HUD colour. Close it to keep the defaults. You can change them later in ClearHUD\scripts\config.lua.
 [*][b]Command line[/b] (for scripts): `` powershell -ExecutionPolicy Bypass -File SB2RealismInstaller.ps1 -NoGui -List powershell -ExecutionPolicy Bypass -File SB2RealismInstaller.ps1 -NoGui -Apply "htr,silentops,gear" [-Delete] powershell -ExecutionPolicy Bypass -File SB2RealismInstaller.ps1 -NoGui -UpdateAll ` Mod ids are in mods.json. -GamePath "D:\Games\SpaceBourne 2"` skips the automatic search.
 [/list]
 

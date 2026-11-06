@@ -17,7 +17,7 @@ param(
     [string]$Manifest
 )
 $ErrorActionPreference = 'Stop'
-$AppVersion = '0.2.3'
+$AppVersion = '0.2.4'
 $AppRepo = 'hubertdungen/SpaceBourne2-Realism'
 $ManifestUrl = "https://raw.githubusercontent.com/$AppRepo/main/mods.json"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -196,6 +196,140 @@ function Backup-ModDir($m) {
     Log "  Backup: $dst"
 }
 
+# ---------- settings (config.lua) ----------
+# An update keeps only the settings you changed; every other setting takes the new release's
+# default. config.default.lua (the defaults of the installed version) is what tells them apart.
+$DefaultsHeader = '-- SB2Realism defaults v'
+
+# The code part of a line: a -- comment outside a string is dropped.
+function Get-LuaCode([string]$line) {
+    $q = $null
+    for ($i = 0; $i -lt $line.Length; $i++) {
+        $c = $line[$i]
+        if ($q) { if ($c -eq [char]'\') { $i++ } elseif ($c -eq $q) { $q = $null } }
+        elseif ($c -eq [char]'"' -or $c -eq [char]"'") { $q = $c }
+        elseif ($c -eq [char]'-' -and $i + 1 -lt $line.Length -and $line[$i + 1] -eq [char]'-') { return $line.Substring(0, $i) }
+    }
+    return $line
+}
+
+# Open braces minus closed ones, outside strings.
+function Get-BraceDepth([string]$code) {
+    $d = 0; $q = $null
+    for ($i = 0; $i -lt $code.Length; $i++) {
+        $c = $code[$i]
+        if ($q) { if ($c -eq [char]'\') { $i++ } elseif ($c -eq $q) { $q = $null } }
+        elseif ($c -eq [char]'"' -or $c -eq [char]"'") { $q = $c }
+        elseif ($c -eq [char]'{') { $d++ }
+        elseif ($c -eq [char]'}') { $d-- }
+    }
+    return $d
+}
+
+# Every setting as "Section.Key" -> its value (spaces tidied, for comparing) and the lines it spans.
+function Get-ConfigEntries([string]$text) {
+    $lines = $text -split "`r?`n"
+    $map = [ordered]@{}
+    $path = New-Object System.Collections.Generic.List[string]
+    $inBlock = $false
+    for ($i = 0; $i -lt $lines.Count; $i++) {
+        $line = $lines[$i]
+        if ($inBlock) { if ($line -match '\]\]') { $inBlock = $false }; continue }
+        if ($line -match '^\s*--\[\[') { if ($line -notmatch '\]\]') { $inBlock = $true }; continue }
+        $code = (Get-LuaCode $line).Trim()
+        if ($code -eq '') { continue }
+        if ($code -match '^(\w+)\s*=\s*\{$') { $path.Add($Matches[1]); continue }    # a section opens
+        if ($code -eq '{') { $path.Add(''); continue }                                # a list entry opens
+        if ($code -match '^\},?$') { if ($path.Count) { $path.RemoveAt($path.Count - 1) }; continue }
+        if ($code -match '^(\w+)\s*=\s*(.+)$') {
+            $key = $Matches[1]; $val = $Matches[2]; $start = $i
+            $depth = Get-BraceDepth $val
+            while ($depth -gt 0 -and $i + 1 -lt $lines.Count) {
+                $i++; $more = (Get-LuaCode $lines[$i]).Trim(); $val += ' ' + $more; $depth += Get-BraceDepth $more
+            }
+            $val = ($val -replace '\s+', ' ').Trim().TrimEnd(',').Trim()
+            $val = $val -replace ',\s*\}', ' }' -replace '\{\s*', '{ ' -replace '\s*\}', ' }'
+            $full = (@($path) + $key) -join '.'
+            $map[$full] = @{ Value = $val; Start = $start; End = $i }
+        }
+    }
+    return $map
+}
+
+# The release's new settings file, with each setting you changed from the old defaults put back.
+# $oldDefs: one or more old default files; a value equal to the default in any of them is not yours.
+function Merge-Config([string[]]$oldDefs, [string]$mine, [string]$newDef) {
+    $olds = @($oldDefs | ForEach-Object { Get-ConfigEntries $_ })
+    $usr = Get-ConfigEntries $mine; $new = Get-ConfigEntries $newDef
+    $nl = if ($newDef -match "`r`n") { "`r`n" } else { "`n" }
+    $lines = New-Object System.Collections.Generic.List[string]
+    $lines.AddRange([string[]]($newDef -split "`r?`n"))
+    $kept = @(); $dropped = @(); $edits = @()
+    foreach ($p in @($usr.Keys)) {
+        $u = $usr[$p].Value
+        if (@($olds | Where-Object { $_.Contains($p) -and $_[$p].Value -eq $u }).Count) { continue }   # an old default: the new one wins
+        if (-not $new.Contains($p)) { $dropped += $p; continue }          # no longer a setting
+        if ($new[$p].Value -eq $u) { continue }                           # the new default is your value
+        $kept += $p
+        $edits += [pscustomobject]@{ Path = $p; Value = $u; Start = $new[$p].Start; End = $new[$p].End }
+    }
+    foreach ($e in @($edits | Sort-Object Start -Descending)) {
+        $first = $lines[$e.Start]
+        $indent = [regex]::Match($first, '^\s*').Value
+        $key = ($e.Path -split '\.')[-1]
+        $comment = ''
+        if ($e.Start -eq $e.End) {
+            $code = Get-LuaCode $first
+            if ($code.Length -lt $first.Length) { $comment = '  ' + $first.Substring($code.Length).Trim() }
+        }
+        $lines.RemoveRange($e.Start, $e.End - $e.Start + 1)
+        $lines.Insert($e.Start, "$indent$key = $($e.Value),$comment")
+    }
+    return @{ Text = ($lines -join $nl); Kept = $kept; Dropped = $dropped }
+}
+
+# The settings file a release shipped with, straight from its zip on GitHub.
+function Get-ReleaseConfig($m, [string]$ver) {
+    if (-not $m.assetName -or -not $ver -or $ver -eq '?') { return $null }
+    $tmp = Join-Path $env:TEMP ('SB2Realism_' + [guid]::NewGuid().ToString('N'))
+    New-Item -ItemType Directory -Force $tmp | Out-Null
+    try {
+        $zip = Join-Path $tmp 'old.zip'
+        Invoke-WebRequest ("https://github.com/$($m.repo)/releases/download/v$ver/" + ($m.assetName -replace '\{v\}', $ver)) -OutFile $zip -UseBasicParsing
+        Expand-Archive $zip (Join-Path $tmp 'x') -Force
+        $f = @(Get-ChildItem (Join-Path $tmp 'x') -Recurse -Filter 'config.lua' | Where-Object { Test-Path (Join-Path $_.DirectoryName 'main.lua') }) | Select-Object -First 1
+        if ($f) { return (Read-Text $f.FullName) }
+    } catch { } finally { Remove-Item $tmp -Recurse -Force -ErrorAction SilentlyContinue }
+    return $null
+}
+
+# Release versions from the repo's tags: git's own ref list, which has no API limit.
+function Get-ReleaseVersions($m) {
+    try {
+        $t = (Invoke-WebRequest "https://github.com/$($m.repo).git/info/refs?service=git-upload-pack" -UseBasicParsing -TimeoutSec 15).Content
+        if ($t -is [byte[]]) { $t = [Text.Encoding]::ASCII.GetString($t) }
+        return @([regex]::Matches($t, 'refs/tags/v([\d.]+)') | ForEach-Object { $_.Groups[1].Value.TrimEnd('.') } | Select-Object -Unique)
+    } catch { return @() }
+}
+
+# The old defaults to compare your settings with. Exact when config.default.lua carries this
+# version's stamp. Otherwise config.lua may have come whole through several updates (installer
+# 0.2.3 and older kept it as it was), so the defaults of every earlier release count too.
+function Get-OldDefaults($m, [string]$ver, [string]$defFile) {
+    $all = @()
+    if (Test-Path $defFile) {
+        $t = Read-Text $defFile
+        $hm = [regex]::Match($t, '^' + [regex]::Escape($DefaultsHeader) + '(\S+)')
+        if ($hm.Success -and $hm.Groups[1].Value -eq $ver) { return $t }
+        $all += $t
+    }
+    $cur = Get-ReleaseConfig $m $ver
+    if ($cur) { $all += $cur }
+    $older = @(Get-ReleaseVersions $m | Where-Object { (Compare-Ver $_ $ver) -lt 0 } | Sort-Object { [version]$_ } -Descending | Select-Object -First 12)
+    foreach ($v in $older) { $c = Get-ReleaseConfig $m $v; if ($c) { $all += $c } }
+    return $all   # callers wrap it in @()
+}
+
 function Install-ModFiles($m) {
     if ($m.external) { throw "$($m.name) is installed by its own app." }
     $lat = $script:Latest[$m.id]
@@ -221,10 +355,15 @@ function Install-ModFiles($m) {
         }
         if (-not $src) { throw "The download has no $($m.folder) folder." }
         $dest = ModDir $m
-        Backup-ModDir $m
         $cfg = Join-Path $dest 'scripts\config.lua'
-        $keep = $null
-        if (Test-Path $cfg) { $keep = Read-Text $cfg }
+        $defFile = Join-Path $dest 'scripts\config.default.lua'
+        $keep = $null; $base = $null
+        if (Test-Path $cfg) {
+            $keep = Read-Text $cfg
+            $inst = Get-Installed $m
+            if ($inst) { $base = @(Get-OldDefaults $m $inst.Version $defFile) }
+        }
+        Backup-ModDir $m
         # enabled.txt is skipped: mods.txt is the one on/off switch.
         Get-ChildItem $src.FullName -Recurse -File | Where-Object { $_.Name -ne 'enabled.txt' } | ForEach-Object {
             $rel = $_.FullName.Substring($src.FullName.Length).TrimStart('\')
@@ -232,10 +371,20 @@ function Install-ModFiles($m) {
             New-Item -ItemType Directory -Force (Split-Path $to) | Out-Null
             Copy-Item $_.FullName $to -Force
         }
-        if ($keep) {
-            Copy-Item $cfg (Join-Path $dest 'scripts\config.default.lua') -Force
-            Write-Text $cfg $keep
-            Log "  Kept your config.lua (new defaults: scripts\config.default.lua)."
+        if (Test-Path $cfg) {
+            $newDef = Read-Text $cfg
+            # the defaults of this version, stamped: the next update compares your settings with them
+            Write-Text $defFile ("$DefaultsHeader$($lat.Version) (written by the SB2 Realism installer; edit config.lua, not this file)`r`n" + $newDef)
+            if ($keep -and $base -and $base.Count) {
+                $r = Merge-Config $base $keep $newDef
+                Write-Text $cfg $r.Text
+                if ($r.Kept.Count) { Log "  Kept your settings: $($r.Kept -join ', ')." }
+                else { Log '  Settings: the new defaults (none of yours differed from the old ones).' }
+                if ($r.Dropped.Count) { Log "  No longer used: $($r.Dropped -join ', ')." }
+            } elseif ($keep) {
+                Write-Text $cfg $keep
+                Log '  Kept your config.lua as it was: the old defaults could not be read (new defaults: scripts\config.default.lua).'
+            }
         }
         Log "  Installed $($m.name) $($lat.Version)."
     } finally { Remove-Item $tmp -Recurse -Force -ErrorAction SilentlyContinue }

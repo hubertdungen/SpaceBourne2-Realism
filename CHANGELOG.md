@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.4 — 2026-11-06
+
+- **Updates take the new default settings and keep only the ones you changed.** Before, an update kept your whole `config.lua`, so the old defaults stayed in it and replaced the new tuning. For example, Ammo Discipline kept giving half a pouch per pickup instead of 15%, and Silent Ops kept the old sight ranges. Now each setting you changed (a colour, a key, an option you switched) is copied into the new file, and every other setting takes the new default. The log lists the settings it kept.
+- **Old installs are cleaned up too.** If your `config.lua` came through several updates, the installer compares it with the defaults of every earlier release, so old defaults are not mistaken for your own settings.
+- `config.default.lua` now says which version's defaults it holds. Don't edit it: edit `config.lua`.
+
 ## 0.2.3 — 2026-11-01
 
 - **Pick Clear HUD's colours when you install it.** Ticking Clear HUD and pressing **Apply ticks** asks for the reticle colour and the HUD colour. Closing that window keeps the defaults: a green reticle and the game's HUD colour. You can change them later in `ClearHUD\scripts\config.lua`.

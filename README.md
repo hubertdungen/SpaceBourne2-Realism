@@ -7,7 +7,7 @@ One window to install, switch on and update the whole SpaceBourne 2 realism mod 
 - **Pick your mods.** Every mod in the set is listed with a short description. Install all of them or just one.
 - **Ticked means on.** Every ticked mod is installed *and* switched on, even one that ships switched off on its own.
 - **See what's out of date.** It shows the version you have and the newest release on GitHub. **Update all** downloads and installs every newer version for you.
-- **Your settings stay.** Updates keep your `config.lua`. The new defaults go next to it as `config.default.lua`.
+- **Your settings stay.** An update keeps every setting you changed in `config.lua` and gives the others the new release's defaults, so new tuning reaches you. The log lists the settings it kept. The defaults of your version are next to it as `config.default.lua`.
 - **Safe.** It never touches your saves or the game's executable. Before it replaces or removes a mod, it keeps a backup in `%LOCALAPPDATA%\SB2Realism\backups`.
 - **UE4SS included.** If UE4SS is missing, one click installs UE4SS 3.0.1, the version every mod in the set is built for.
 

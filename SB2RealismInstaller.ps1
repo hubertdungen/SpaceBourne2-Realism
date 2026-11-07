@@ -17,7 +17,7 @@ param(
     [string]$Manifest
 )
 $ErrorActionPreference = 'Stop'
-$AppVersion = '0.2.4'
+$AppVersion = '0.2.5'
 $AppRepo = 'hubertdungen/SpaceBourne2-Realism'
 $ManifestUrl = "https://raw.githubusercontent.com/$AppRepo/main/mods.json"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -472,7 +472,8 @@ function Enable-Mod($m) {
     Log "  $($m.name) is active."
 }
 
-# Choices a mod offers at install (mods.json "choices"): writes Key = "value" inside its section of config.lua.
+# Choices a mod offers at install (mods.json "choices"): writes Key = "value" (or, for "type": "bool",
+# Key = true/false from a "Yes..."/"No" answer) inside its section of config.lua, or at the top level.
 function Set-ModChoices($m, $values) {
     $cfg = Join-Path (ModDir $m) 'scripts\config.lua'
     if (-not $values -or -not (Test-Path $cfg)) { return }
@@ -486,9 +487,16 @@ function Set-ModChoices($m, $values) {
             if (-not $s.Success) { continue }
             $start = $s.Index + $s.Length
         }
-        $k = (New-Object regex ("(?<![A-Za-z_])$([regex]::Escape($c.key))\s*=\s*""[^""]*""")).Match($t, $start)
+        $key = [regex]::Escape($c.key)
+        if ($c.type -eq 'bool') {
+            $k = (New-Object regex ("(?<![A-Za-z_])$key\s*=\s*(true|false)\b")).Match($t, $start)
+            $new = "$($c.key) = " + $(if ($v -match '^Yes') { 'true' } else { 'false' })
+        } else {
+            $k = (New-Object regex ("(?<![A-Za-z_])$key\s*=\s*""[^""]*""")).Match($t, $start)
+            $new = "$($c.key) = ""$v"""
+        }
         if (-not $k.Success) { continue }
-        $t = $t.Substring(0, $k.Index) + "$($c.key) = ""$v""" + $t.Substring($k.Index + $k.Length)
+        $t = $t.Substring(0, $k.Index) + $new + $t.Substring($k.Index + $k.Length)
         Log "  $($c.label): $v"
     }
     if ($t -ne $orig) { Write-Text $cfg $t; Log "  You can change it later in $($m.folder)\scripts\config.lua." }
@@ -770,19 +778,19 @@ function Show-ChoicesDialog($m) {
     $d.Text = "$($m.name): choose"
     $d.FormBorderStyle = 'FixedDialog'; $d.StartPosition = 'CenterParent'; $d.MaximizeBox = $false; $d.MinimizeBox = $false
     $d.Font = $form.Font
-    $d.ClientSize = New-Object System.Drawing.Size(340, (56 + 34 * @($m.choices).Count))
+    $d.ClientSize = New-Object System.Drawing.Size(420, (56 + 34 * @($m.choices).Count))
     $boxes = @{}; $y = 14
     foreach ($c in @($m.choices)) {
         $l = New-Object System.Windows.Forms.Label
         $l.Text = $c.label; $l.AutoSize = $true; $l.Location = New-Object System.Drawing.Point(14, ($y + 4))
         $d.Controls.Add($l)
         $cb = New-Object System.Windows.Forms.ComboBox
-        $cb.DropDownStyle = 'DropDownList'; $cb.Width = 170; $cb.Location = New-Object System.Drawing.Point(150, $y)
+        $cb.DropDownStyle = 'DropDownList'; $cb.Width = 190; $cb.Location = New-Object System.Drawing.Point(216, $y)
         [void]$cb.Items.AddRange([object[]]@($c.options)); $cb.SelectedIndex = 0
         $d.Controls.Add($cb); $boxes[$c.label] = $cb; $y += 34
     }
     $ok = New-Object System.Windows.Forms.Button
-    $ok.Text = 'OK'; $ok.DialogResult = 'OK'; $ok.Location = New-Object System.Drawing.Point(245, ($y + 4))
+    $ok.Text = 'OK'; $ok.DialogResult = 'OK'; $ok.Location = New-Object System.Drawing.Point(331, ($y + 4))
     $d.Controls.Add($ok); $d.AcceptButton = $ok
     if ($d.ShowDialog($form) -ne 'OK') { return $null }
     $v = @{}

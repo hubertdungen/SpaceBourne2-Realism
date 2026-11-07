@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.5 — 2026-11-07
+
+- **Clear HUD: hide the clutter when you install it.** The window that asks for the reticle and HUD colours now also asks whether to hide the damage numbers, the enemy health bar and the markers on foot. Hiding the markers on foot also hides mission markers, because the game has one switch for all of them. The answer is pre-set to hide; you can change it later in `ClearHUD\scripts\config.lua`.
+
 ## 0.2.4 — 2026-11-06
 
 - **Updates take the new default settings and keep only the ones you changed.** Before, an update kept your whole `config.lua`, so the old defaults stayed in it and replaced the new tuning. For example, Ammo Discipline kept giving half a pouch per pickup instead of 15%, and Silent Ops kept the old sight ranges. Now each setting you changed (a colour, a key, an option you switched) is copied into the new file, and every other setting takes the new default. The log lists the settings it kept.

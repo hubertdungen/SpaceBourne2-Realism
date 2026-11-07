@@ -183,6 +183,24 @@
           "section": "Theme",
           "key": "Preset",
           "options": ["Game", "Amber", "Green", "Red", "Blue", "Purple", "White"]
+        },
+        {
+          "label": "Hide damage numbers",
+          "key": "HideDamageNumbers",
+          "type": "bool",
+          "options": ["Yes", "No"]
+        },
+        {
+          "label": "Hide enemy health bar",
+          "key": "HideTargetBar",
+          "type": "bool",
+          "options": ["Yes", "No"]
+        },
+        {
+          "label": "Hide markers on foot",
+          "key": "HideMarkersOnFoot",
+          "type": "bool",
+          "options": ["Yes (missions too)", "No"]
         }
       ]
     },

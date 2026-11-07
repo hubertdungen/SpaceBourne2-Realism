@@ -67,7 +67,7 @@ SB2 HOTAS has its own bridge app. When you tick it, the installer downloads the 
     - It sets the master switch in config.lua, e.g. Enabled (and StartOn for Tactical Engineering).
     - If the mod remembers an in-game toggle, it resets that toggle to on.
     - Optional extras inside a mod keep your choice, e.g. HTR's gear bonus.
-[*][b]Choices at install.[/b] When you first install Clear HUD, a small window asks for the reticle colour and the HUD colour. Close it to keep the defaults. You can change them later in ClearHUD\scripts\config.lua.
+[*][b]Choices at install.[/b] When you first install Clear HUD, a small window asks for the reticle colour and the HUD colour, and whether to hide the damage numbers, the enemy health bar and the markers on foot (the game has one switch for all on-foot markers, so this hides mission markers too). Press OK to take the answers shown, or close it to keep the mod's defaults. You can change them later in ClearHUD\scripts\config.lua.
 [*][b]Command line[/b] (for scripts): `` powershell -ExecutionPolicy Bypass -File SB2RealismInstaller.ps1 -NoGui -List powershell -ExecutionPolicy Bypass -File SB2RealismInstaller.ps1 -NoGui -Apply "htr,silentops,gear" [-Delete] powershell -ExecutionPolicy Bypass -File SB2RealismInstaller.ps1 -NoGui -UpdateAll ` Mod ids are in mods.json. -GamePath "D:\Games\SpaceBourne 2"` skips the automatic search.
 [/list]
 

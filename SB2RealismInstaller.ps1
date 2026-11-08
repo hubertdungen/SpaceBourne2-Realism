@@ -17,7 +17,7 @@ param(
     [string]$Manifest
 )
 $ErrorActionPreference = 'Stop'
-$AppVersion = '0.2.5'
+$AppVersion = '0.2.6'
 $AppRepo = 'hubertdungen/SpaceBourne2-Realism'
 $ManifestUrl = "https://raw.githubusercontent.com/$AppRepo/main/mods.json"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -25,6 +25,7 @@ $Utf8 = New-Object Text.UTF8Encoding($false)
 $DataDir = Join-Path $env:LOCALAPPDATA 'SB2Realism'
 $script:Gui = $null          # log textbox when the window is open
 $script:Latest = @{}         # mod id -> @{ Version; Url } from GitHub
+$script:Restarting = $false  # true once a newer installer's window is starting
 
 # ---------- helpers ----------
 function Log([string]$msg) {
@@ -135,11 +136,18 @@ function Get-Installed($m) {
 }
 
 # Latest release tag from github.com's own redirect, not the API: the API allows only 60 requests an hour.
+# One retry: GitHub sometimes answers 504 for a moment.
 function Get-LatestTag([string]$repo) {
-    $req = [Net.HttpWebRequest]::Create("https://github.com/$repo/releases/latest")
-    $req.AllowAutoRedirect = $false; $req.Method = 'HEAD'; $req.Timeout = 15000; $req.UserAgent = "SB2RealismInstaller/$AppVersion"
-    $resp = $req.GetResponse()
-    try { $loc = $resp.Headers['Location'] } finally { $resp.Close() }
+    $loc = $null
+    foreach ($try in 1, 2) {
+        try {
+            $req = [Net.HttpWebRequest]::Create("https://github.com/$repo/releases/latest")
+            $req.AllowAutoRedirect = $false; $req.Method = 'HEAD'; $req.Timeout = 15000; $req.UserAgent = "SB2RealismInstaller/$AppVersion"
+            $resp = $req.GetResponse()
+            try { $loc = $resp.Headers['Location'] } finally { $resp.Close() }
+            break
+        } catch { if ($try -eq 2) { throw }; Start-Sleep -Milliseconds 800 }
+    }
     if ($loc -match '/releases/tag/([^/?#]+)$') { return [Uri]::UnescapeDataString($Matches[1]) }
     throw "No release yet for $repo."
 }
@@ -610,11 +618,61 @@ function Invoke-UpdateAll($mods) {
     Log 'Done.'
 }
 
-function Test-InstallerUpdate {
+# The installer updates itself when a newer release is out: the release zip's files replace these
+# (the old ones go to %LOCALAPPDATA%\SB2Realism\backups\installer-<version>) and the window reopens.
+$UpdatedNote = Join-Path $DataDir 'installer-updated.txt'
+function Update-Installer {
+    $tag = Get-LatestTag $AppRepo
+    $v = $tag.TrimStart('v')
+    if ((Compare-Ver $AppVersion $v) -ge 0) { return $false }
+    Log "A newer installer is out: $v. Updating it..."
+    $tmp = Join-Path $env:TEMP ('SB2Realism-installer-' + [guid]::NewGuid().ToString('N'))
+    $bak = Join-Path $DataDir "backups\installer-$AppVersion"
+    $done = @()
     try {
-        $tag = Get-LatestTag $AppRepo
-        if ((Compare-Ver $AppVersion $tag) -lt 0) { Log "A newer installer is available: $tag - https://github.com/$AppRepo/releases/latest" }
-    } catch { }
+        New-Item -ItemType Directory -Force $tmp, $bak | Out-Null
+        $zip = Join-Path $tmp 'installer.zip'
+        Invoke-WebRequest "https://github.com/$AppRepo/releases/download/$tag/SB2-Realism-Installer-$v.zip" -OutFile $zip -UseBasicParsing
+        Expand-Archive -LiteralPath $zip -DestinationPath (Join-Path $tmp 'x') -Force
+        $ps1 = Get-ChildItem (Join-Path $tmp 'x') -Recurse -File -Filter 'SB2RealismInstaller.ps1' | Select-Object -First 1
+        # Only a zip that holds installer $v itself: anything else could reopen into an update loop.
+        if (-not $ps1 -or (Read-Text $ps1.FullName) -notmatch ("\`$AppVersion = '" + [regex]::Escape($v) + "'")) { throw "the download does not hold installer $v" }
+        # The script goes last, so a failed copy never leaves a new script next to old files.
+        $files = @(Get-ChildItem $ps1.DirectoryName -File | Sort-Object { $_.Name -eq $ps1.Name })
+        try {
+            foreach ($f in $files) {
+                $dst = Join-Path $PSScriptRoot $f.Name
+                if (Test-Path -LiteralPath $dst) { Copy-Item -LiteralPath $dst -Destination $bak -Force }
+                Copy-Item -LiteralPath $f.FullName -Destination $dst -Force
+                $done += $f.Name
+            }
+        } catch {
+            foreach ($n in $done) {
+                $b = Join-Path $bak $n
+                if (Test-Path -LiteralPath $b) { Copy-Item -LiteralPath $b -Destination (Join-Path $PSScriptRoot $n) -Force }
+            }
+            throw
+        }
+    } catch {
+        Log "Could not update the installer: $($_.Exception.Message.TrimEnd('.')). Download $v from https://github.com/$AppRepo/releases/latest"
+        return $false
+    } finally { Remove-Item -LiteralPath $tmp -Recurse -Force -ErrorAction SilentlyContinue }
+    try { Write-Text $UpdatedNote $AppVersion } catch { }
+    return $true
+}
+
+function Restart-Installer {
+    $a = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-STA', '-WindowStyle', 'Hidden', '-File', "`"$PSCommandPath`"")
+    if ($GamePath) { $a += @('-GamePath', "`"$GamePath`"") }
+    Start-Process powershell.exe -ArgumentList $a -WindowStyle Hidden
+}
+
+# True when a newer installer is in place and its window is starting (the caller closes this one).
+function Invoke-SelfUpdate {
+    $up = $false
+    try { $up = Update-Installer } catch { Log "Could not check for a newer installer: $($_.Exception.Message)" }
+    if ($up) { Restart-Installer; $script:Restarting = $true }
+    return $up
 }
 
 # ---------- headless ----------
@@ -770,7 +828,14 @@ $bBrowse.Add_Click({
     }
 })
 $bUe.Add_Click({ Invoke-Safe { Install-UE4SSFiles } })
-$bCheck.Add_Click({ Invoke-Safe { Log 'Checking GitHub for new versions...'; Update-Latest $script:Mods; Test-InstallerUpdate; Log 'Done.' } })
+$bCheck.Add_Click({
+    Invoke-Safe {
+        Log 'Checking GitHub for new versions...'
+        if (Invoke-SelfUpdate) { return }
+        Update-Latest $script:Mods; Log 'Done.'
+    }
+    if ($script:Restarting) { $form.Close() }
+})
 $bUpdate.Add_Click({ Invoke-Safe { Invoke-UpdateAll $script:Mods } })
 # Asks a mod's install choices (e.g. Clear HUD's colours). Closing the window keeps the mod's defaults.
 function Show-ChoicesDialog($m) {
@@ -854,12 +919,19 @@ $cbStart.Add_CheckedChanged({
 })
 $form.Add_Shown({
     Invoke-Safe {
+        if (Test-Path -LiteralPath $UpdatedNote) {
+            $old = (Read-Text $UpdatedNote).Trim()
+            Remove-Item -LiteralPath $UpdatedNote -Force -ErrorAction SilentlyContinue
+            if ((Compare-Ver $old $AppVersion) -lt 0) { Log "The installer updated itself from $old to $AppVersion. What's new is in CHANGELOG.md." }
+        }
+        if ($cbStart.Checked -and (Invoke-SelfUpdate)) { return }
         $script:Mods = Get-Mods
         if (-not (Test-GameDir $script:Game)) { Log 'SpaceBourne 2 was not found automatically. Press Browse and pick its folder.' }
         else { Log "Game: $($script:Game)" }
-        if ($cbStart.Checked) { Log 'Checking GitHub for new versions...'; Update-Latest $script:Mods; Test-InstallerUpdate }
+        if ($cbStart.Checked) { Log 'Checking GitHub for new versions...'; Update-Latest $script:Mods }
         if (Test-GameRunning) { Log 'SpaceBourne 2 is running: close it before applying changes.' }
     }
+    if ($script:Restarting) { $form.Close() }
 })
 
 [void]$form.ShowDialog()

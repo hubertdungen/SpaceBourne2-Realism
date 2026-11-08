@@ -7,6 +7,7 @@ One window to install, switch on and update the whole SpaceBourne 2 realism mod 
 - **Pick your mods.** Every mod in the set is listed with a short description. Install all of them or just one.
 - **Ticked means on.** Every ticked mod is installed *and* switched on, even one that ships switched off on its own.
 - **See what's out of date.** It shows the version you have and the newest release on GitHub. **Update all** downloads and installs every newer version for you.
+- **Updates itself.** When a newer installer is out, it downloads it as the window opens, keeps the old copy in `%LOCALAPPDATA%\SB2Realism\backups`, and reopens as the new version.
 - **Your settings stay.** An update keeps every setting you changed in `config.lua` and gives the others the new release's defaults, so new tuning reaches you. The log lists the settings it kept. The defaults of your version are next to it as `config.default.lua`.
 - **Safe.** It never touches your saves or the game's executable. Before it replaces or removes a mod, it keeps a backup in `%LOCALAPPDATA%\SB2Realism\backups`.
 - **UE4SS included.** If UE4SS is missing, one click installs UE4SS 3.0.1, the version every mod in the set is built for.
@@ -26,7 +27,7 @@ What the buttons do:
 | **Play** | Starts SpaceBourne 2 (through Steam for Steam copies). When SB2 HOTAS is on, it starts its bridge app first. |
 | **Apply ticks** | Installs and switches on every ticked mod. Switches off every unticked mod; you choose whether its files are deleted (a backup is kept). |
 | **Update all** | Installs the newest release of every installed mod that has one. |
-| **Check for updates** | Asks GitHub for the newest versions. It also runs when the window opens, unless you untick that option. |
+| **Check for updates** | Asks GitHub for the newest versions of the mods and of the installer, which updates itself. It also runs when the window opens, unless you untick that option. |
 | **Open mod page** | Opens the selected mod's Nexus page. Double-clicking a row does the same. |
 | **Open SB2 HOTAS** | Opens the SB2 HOTAS bridge app, which must run while you play. The first time, it offers to download it (about 50 MB). |
 

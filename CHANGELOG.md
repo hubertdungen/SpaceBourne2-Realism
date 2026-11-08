@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.6 — 2026-11-08
+
+- **The installer updates itself.** When you open it and a newer installer is out, it downloads it, keeps the old copy in `%LOCALAPPDATA%\SB2Realism\backups`, and reopens as the new version. The log says which version you came from. **Check for updates** does the same. If the download fails or the folder cannot be written, nothing changes and the log gives the download link. Unticking "Check for updates when this opens" turns this off too.
+- If you have 0.2.5 or older, download 0.2.6 once by hand. From then on it updates itself.
+- Squad Tactics is out (Nexus 18) and is listed as a normal mod.
+- When GitHub answers with a passing error (504), the installer tries once more before giving up.
+
 ## 0.2.5 — 2026-11-07
 
 - **Clear HUD: hide the clutter when you install it.** The window that asks for the reticle and HUD colours now also asks whether to hide the damage numbers, the enemy health bar and the markers on foot. Hiding the markers on foot also hides mission markers, because the game has one switch for all of them. The answer is pre-set to hide; you can change it later in `ClearHUD\scripts\config.lua`.

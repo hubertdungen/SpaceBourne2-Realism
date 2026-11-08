@@ -225,7 +225,7 @@
       "repo": "hubertdungen/SpaceBourne2-SquadTactics",
       "assetName": "SquadTactics-{v}.zip",
       "asset": "\\.zip$",
-      "planned": true,
+      "nexus": 18,
       "desc": "Your squad leads the way: one or two soldiers move ahead to the next cover, watch the way, and leapfrog as you advance.",
       "switches": [
         "Enabled"

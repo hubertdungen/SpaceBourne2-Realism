@@ -6,7 +6,7 @@ One window to install, switch on and update the whole SpaceBourne 2 realism mod 
 
 - **Pick your mods.** Every mod in the set is listed with a short description. Install all of them or just one.
 - **Ticked means on.** Every ticked mod is installed *and* switched on, even one that ships switched off on its own.
-- **See what's out of date.** It shows the version you have and the newest release on GitHub. **Update all** downloads and installs every newer version for you.
+- **See what's out of date.** It shows the version you have and the newest release on GitHub. **Update all** downloads and installs every newer version for you. If it can't tell which version is installed, it says so, and **Update all** puts the newest one in.
 - **Updates itself.** When a newer installer is out, it downloads it as the window opens, keeps the old copy in `%LOCALAPPDATA%\SB2Realism\backups`, and reopens as the new version.
 - **Your settings stay.** An update keeps every setting you changed in `config.lua` and gives the others the new release's defaults, so new tuning reaches you. The log lists the settings it kept. The defaults of your version are next to it as `config.default.lua`.
 - **Safe.** It never touches your saves or the game's executable. Before it replaces or removes a mod, it keeps a backup in `%LOCALAPPDATA%\SB2Realism\backups`.

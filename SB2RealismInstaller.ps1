@@ -17,7 +17,7 @@ param(
     [string]$Manifest
 )
 $ErrorActionPreference = 'Stop'
-$AppVersion = '0.2.6'
+$AppVersion = '0.2.7'
 $AppRepo = 'hubertdungen/SpaceBourne2-Realism'
 $ManifestUrl = "https://raw.githubusercontent.com/$AppRepo/main/mods.json"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -125,14 +125,19 @@ function Get-Installed($m) {
         $mm = [regex]::Match((Read-Text $main), 'VERSION\s*=\s*"([^"]+)"')
         if ($mm.Success) { $ver = $mm.Groups[1].Value }
     }
-    # Mods with their own app (SB2 HOTAS): the version of the copy this installer keeps.
-    if ($ver -eq '?' -and $m.app) {
-        $vf = Join-Path (AppDir $m) 'version.txt'
-        if (Test-Path $vf) { $ver = (Read-Text $vf).Trim() }
+    # No VERSION line: the version this installer last put in the game folder, if it did. Never the
+    # app's version, which is not the in-game part's (0.2.6 showed SB2 HOTAS as up to date that way).
+    $vf = Join-Path $d 'installed-version.txt'
+    if ($ver -eq '?' -and (Test-Path $vf)) { $ver = (Read-Text $vf).Trim() }
+    # Mods with their own app (SB2 HOTAS): the version of the app copy this installer keeps.
+    $app = $null
+    if ($m.app) {
+        $af = Join-Path (AppDir $m) 'version.txt'
+        if (Test-Path $af) { $app = (Read-Text $af).Trim() }
     }
     $state = Get-ModsTxtState $m.folder
     $active = ($state -eq '1') -or (($state -ne '0') -and (Test-Path (Join-Path $d 'enabled.txt')))
-    return @{ Version = $ver; Active = $active }
+    return @{ Version = $ver; Active = $active; App = $app }
 }
 
 # Latest release tag from github.com's own redirect, not the API: the API allows only 60 requests an hour.
@@ -178,18 +183,31 @@ function Update-Latest($mods) {
 # A planned mod becomes a normal one as soon as its repo has a release: no installer update needed.
 function Test-ComingSoon($m) { [bool]($m.planned -and -not $script:Latest[$m.id] -and -not (Get-Installed $m)) }
 
+# An unknown version counts as out of date: Update all puts the newest release in.
+function Test-NeedsUpdate($inst, $lat) {
+    if (-not $inst -or -not $lat) { return $false }
+    if ($inst.Version -eq '?') { return $true }
+    if ((Compare-Ver $inst.Version $lat.Version) -lt 0) { return $true }
+    return [bool]($inst.App -and (Compare-Ver $inst.App $lat.Version) -lt 0)
+}
+
 function Get-StatusText($m) {
     $inst = Get-Installed $m
     $lat = $script:Latest[$m.id]
     if (Test-ComingSoon $m) { return 'coming soon' }
     if (-not $inst) { return 'not installed' }
     $s = if ($inst.Active) { 'active' } else { 'installed, off' }
-    if ($lat -and $inst.Version -ne '?') {
-        $c = Compare-Ver $inst.Version $lat.Version
-        if ($c -lt 0) { $s += " - update $($inst.Version) -> $($lat.Version)" }
-        elseif ($c -gt 0) { $s += ' - newer than release' }
-        else { $s += ' - up to date' }
+    if ($lat) {
+        if ($inst.Version -eq '?') { $s += " - version unknown: Update all installs $($lat.Version)" }
+        else {
+            $c = Compare-Ver $inst.Version $lat.Version
+            if ($c -lt 0) { $s += " - update $($inst.Version) -> $($lat.Version)" }
+            elseif ($c -gt 0) { $s += ' - newer than release' }
+            elseif ($inst.App -and (Compare-Ver $inst.App $lat.Version) -lt 0) { $s += " - app update $($inst.App) -> $($lat.Version)" }
+            else { $s += ' - up to date' }
+        }
     }
+    if ($inst.App) { $s += " (app $($inst.App))" }
     return $s
 }
 
@@ -431,6 +449,8 @@ function Install-AppFiles($m) {
         if ($m.installScript) {
             $out = & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $dest $m.installScript) -Game $script:Game 2>&1
             foreach ($l in @($out)) { if ("$l".Trim()) { Log "  $l" } }
+            # Remember which release put the in-game part there, for a part with no VERSION line.
+            if ($LASTEXITCODE -eq 0 -and (Test-Path (ModDir $m))) { Write-Text (Join-Path (ModDir $m) 'installed-version.txt') $lat.Version }
         }
     } finally { Remove-Item $tmp -Recurse -Force -ErrorAction SilentlyContinue }
 }
@@ -594,8 +614,7 @@ function Invoke-UpdateAll($mods) {
     foreach ($m in $mods) {
         $inst = Get-Installed $m
         $lat = $script:Latest[$m.id]
-        if (-not $inst -or -not $lat -or $inst.Version -eq '?') { continue }
-        if ((Compare-Ver $inst.Version $lat.Version) -ge 0) { continue }
+        if (-not (Test-NeedsUpdate $inst $lat)) { continue }
         $any = $true
         Log "$($m.name): $($inst.Version) -> $($lat.Version)"
         if ($m.external) {
@@ -796,7 +815,7 @@ function Update-View {
         $it.Tag = $m
         # yellow = update available, green = installed and up to date, white = not installed
         if ($ok -and (Test-ComingSoon $m)) { $it.ForeColor = [System.Drawing.Color]::Gray }
-        elseif ($inst -and $lat -and $inst.Version -ne '?' -and (Compare-Ver $inst.Version $lat.Version) -lt 0) {
+        elseif ($ok -and (Test-NeedsUpdate $inst $lat)) {
             $it.BackColor = $ColUpdate; $updates++
         } elseif ($inst) { $it.BackColor = $ColOk }
         [void]$lv.Items.Add($it)

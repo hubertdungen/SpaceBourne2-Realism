@@ -233,6 +233,19 @@
       "state": []
     },
     {
+      "id": "unofficialpatch",
+      "name": "Unofficial Patch",
+      "folder": "UnofficialPatch",
+      "repo": "hubertdungen/SpaceBourne2-UnofficialPatch",
+      "assetName": "UnofficialPatch-{v}.zip",
+      "asset": "\\.zip$",
+      "desc": "Fixes for the game's own bugs: allies lined up in lifts, enemies stuck blind after lifts, no instant squad fire.",
+      "switches": [
+        "Enabled"
+      ],
+      "state": []
+    },
+    {
       "id": "hotas",
       "name": "SB2 HOTAS (optional)",
       "folder": "SB2HOTAS",

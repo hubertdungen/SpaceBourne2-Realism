@@ -239,6 +239,7 @@
       "repo": "hubertdungen/SpaceBourne2-UnofficialPatch",
       "assetName": "UnofficialPatch-{v}.zip",
       "asset": "\\.zip$",
+      "nexus": 19,
       "desc": "Fixes for the game's own bugs: allies lined up in lifts, enemies stuck blind after lifts, no instant squad fire.",
       "switches": [
         "Enabled"

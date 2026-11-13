@@ -212,7 +212,7 @@
       "assetName": "BiggerArmies-{v}.zip",
       "asset": "\\.zip$",
       "nexus": 17,
-      "desc": "More general slots for your faction, so you can field twice as many ground and space forces.",
+      "desc": "More general slots for your faction, so you can field twice as many ground and space forces. Your allied ships also catch rescue pods for you.",
       "switches": [
         "Enabled"
       ],

@@ -212,7 +212,7 @@
       "assetName": "BiggerArmies-{v}.zip",
       "asset": "\\.zip$",
       "nexus": 17,
-      "desc": "More general slots for your faction, so you can field twice as many ground and space forces. Your allied ships also catch rescue pods for you.",
+      "desc": "More general slots for your faction, so you can field twice as many ground and space forces.",
       "switches": [
         "Enabled"
       ],
@@ -241,6 +241,20 @@
       "asset": "\\.zip$",
       "nexus": 19,
       "desc": "Fixes for the game's own bugs: allies lined up in lifts, enemies stuck blind after lifts, no instant squad fire.",
+      "switches": [
+        "Enabled"
+      ],
+      "state": []
+    },
+    {
+      "id": "hardcorespacerealism",
+      "name": "Hardcore Space Realism",
+      "folder": "HardcoreSpaceRealism",
+      "repo": "hubertdungen/SpaceBourne2-HardcoreSpaceRealism",
+      "assetName": "HardcoreSpaceRealism-{v}.zip",
+      "asset": "\\.zip$",
+      "nexus": 20,
+      "desc": "Space combat with weight: allied ships catch rescue pods for your faction and fall back when badly hurt, low-rank enemies fly less recklessly, and damaged ships lose speed, turning and shield recharge.",
       "switches": [
         "Enabled"
       ],

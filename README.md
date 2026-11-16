@@ -82,3 +82,6 @@ SB2 HOTAS has its own bridge app. When you tick it, the installer downloads the 
 - UE4SS by the [RE-UE4SS](https://github.com/UE4SS-RE/RE-UE4SS) team (MIT). The installer downloads it from HTR's full release, which includes the licence notice.
 
 MIT licence.
+
+
+<p align="center"><a href="https://dlforge.dungenlabs.com"><img src="docs/branding/dlforge-logo.svg" alt="DL Forge" width="120"></a><br><a href="https://dlforge.dungenlabs.com">DL Forge</a></p>

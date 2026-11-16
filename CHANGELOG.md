@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.8 — 2026-11-16
+
+- **Switching a mod on touches only its own switch.** A ticked mod gets its main `Enabled = false` line in `config.lua` set to true. When that main switch was already on, the installer could switch on the next `Enabled = false` further down instead: an option the mod ships off on purpose (Hardcore Space Realism's ShareTarget). Now it looks only at the mod's own first `Enabled =` line, and changes it only when it is false.
+- **The list inside the download** now has Unofficial Patch and Hardcore Space Realism too. The installer already showed them, because it reads the list from GitHub each time it opens.
+
 ## 0.2.7 — 2026-11-12
 
 - **No more "up to date" when it is not.** For SB2 HOTAS the installer showed the bridge app's version as the installed version, so an older in-game part looked up to date. The Installed column now always shows the version of the mod in your game folder. The app's own version is shown next to the status.

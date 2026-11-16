@@ -255,9 +255,7 @@
       "asset": "\\.zip$",
       "nexus": 20,
       "desc": "Space combat with weight: allied ships catch rescue pods for your faction and fall back when badly hurt, low-rank enemies fly less recklessly, and damaged ships lose speed, turning and shield recharge.",
-      "switches": [
-        "Enabled"
-      ],
+      "switches": [],
       "state": []
     },
     {

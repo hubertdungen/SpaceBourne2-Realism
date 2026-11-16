@@ -483,8 +483,14 @@ function Enable-Mod($m) {
     if ((Test-Path $cfg) -and $m.switches) {
         $t = Read-Text $cfg; $orig = $t
         foreach ($k in $m.switches) {
-            $re = New-Object regex ("(?m)^(\s*$([regex]::Escape($k))\s*=\s*)false\b")
-            $t = $re.Replace($t, '${1}true', 1)
+            # Only the mod's own switch: the first "<key> =" line. A nested switch further down
+            # (e.g. ShareTarget.Enabled in HSR) keeps its value even when the main one is already on.
+            $re = New-Object regex ("(?m)^\s*$([regex]::Escape($k))\s*=\s*(true|false)\b")
+            $hit = $re.Match($t)
+            if ($hit.Success -and $hit.Groups[1].Value -eq 'false') {
+                $i = $hit.Groups[1].Index
+                $t = $t.Substring(0, $i) + 'true' + $t.Substring($i + 5)
+            }
         }
         if ($t -ne $orig) { Write-Text $cfg $t; Log "  Switched on in config.lua: $($m.switches -join ', ')." }
     }
